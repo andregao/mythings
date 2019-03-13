@@ -1,0 +1,52 @@
+<div fxLayout="column">
+  <mat-action-list>
+    <button
+      mat-list-item
+      [ngClass]="{ active: currentFilter === 'inbox' }"
+      (click)="onSetFilter('inbox')"
+    >
+      <mat-icon mat-list-icon>inbox</mat-icon>
+      Inbox
+    </button>
+    <button
+      mat-list-item
+      [ngClass]="{ active: currentFilter === 'someday' }"
+      (click)="onSetFilter('someday')"
+    >
+      <mat-icon mat-list-icon>archive</mat-icon>
+      Someday
+    </button>
+    <button
+      mat-list-item
+      [ngClass]="{ active: currentFilter === 'completed' }"
+      (click)="onSetFilter('completed')"
+    >
+      <mat-icon mat-list-icon>assignment_turned_in</mat-icon>
+      Completed
+    </button>
+  </mat-action-list>
+  <mat-action-list
+    dense
+    cdkDropList
+    (cdkDropListDropped)="onProjectDrop($event)"
+  >
+    <mat-divider></mat-divider>
+    <h3 mat-subheader>Projects</h3>
+    <div *ngIf="orderedProjects?.length">
+      <div *ngFor="let project of orderedProjects" cdkDrag cdkDragLockAxis="y">
+        <button
+          mat-list-item
+          [ngClass]="{ active: currentFilter === project?.id }"
+          (click)="onSetFilter(project.id)"
+        >
+          <mat-icon mat-list-icon>list</mat-icon>
+          <span class="project-title">{{ project?.title }}</span>
+        </button>
+      </div>
+    </div>
+    <button mat-list-item (click)="onAddProject()">
+      <mat-icon mat-list-icon>add</mat-icon>
+      add a project
+    </button>
+  </mat-action-list>
+</div>

@@ -1,0 +1,41 @@
+<mat-toolbar color="primary" fxLayout="row">
+  <span class="link" routerLink="/">MyThings</span>
+  <span fxFlex></span>
+
+  <!--signed in state-->
+  <div
+    *ngIf="(authService.currentUser$ | async) as currentUser; else signedOut"
+  >
+    <button mat-flat-button color="primary" [matMenuTriggerFor]="userMenu">
+      <img
+        *ngIf="currentUser.photoURL; else avatarIcon"
+        src="{{ currentUser.photoURL }}"
+        class="user-image"
+        alt="User Picture"
+      />
+      <ng-template #avatarIcon><mat-icon>face</mat-icon></ng-template>
+      {{ currentUser.displayName }}
+    </button>
+    <mat-menu #userMenu="matMenu">
+      <button mat-menu-item (click)="authService.signOut()">
+        Sign Out
+      </button>
+    </mat-menu>
+  </div>
+
+  <!--signed out state-->
+  <ng-template #signedOut>
+    <button mat-flat-button color="primary" routerLink="/signin">
+      Sign In
+    </button>
+    <button mat-flat-button color="primary" routerLink="/signup">
+      Sign Up
+    </button>
+  </ng-template>
+</mat-toolbar>
+
+<!--loading overlay-->
+<mt-loading
+  [show]="appService.isLoading$ | async"
+  [mode]="appService.loadingType$ | async"
+></mt-loading>

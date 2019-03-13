@@ -1,0 +1,142 @@
+<div *ngIf="(authType$ | async) === 'signin'; then signIn; else signUp"></div>
+
+<!--sign in form-->
+<ng-template #signIn>
+  <form [formGroup]="signInForm" fxLayoutAlign="center" (ngSubmit)="onSignIn()">
+    <mat-card fxLayout="column" fxFlex="60" fxFlex.lt-sm="90">
+      <mat-card-title>Sign In</mat-card-title>
+      <a mat-button routerLink="/signup" class="sign-up-link" fxFlexAlign="end">
+        Need an account?
+      </a>
+      <mat-form-field>
+        <input matInput placeholder="Email" formControlName="email" required/>
+        <mat-error *ngIf="signUpForm.get('email').hasError('required')">
+          E-mail is required
+        </mat-error>
+        <mat-error *ngIf="signUpForm.get('email').hasError('email')">
+          Invalid E-mail address
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field>
+        <input
+          matInput
+          type="password"
+          placeholder="Password"
+          formControlName="password"
+          required
+        />
+        <mat-error
+          *ngIf="signUpForm.get('passwordGroup.password').hasError('required')"
+        >
+          Please enter your password
+        </mat-error>
+      </mat-form-field>
+      <div class="overall-error">
+        <mat-error *ngIf="error">{{ error }}</mat-error>
+      </div>
+      <button
+        mat-raised-button
+        type="submit"
+        color="primary"
+        [disabled]="signInForm.invalid"
+      >
+        Log In
+      </button>
+      <button
+        mat-stroked-button
+        type="button"
+        class="id-provider"
+        (click)="onUseGoogle()"
+      >
+        <mat-icon svgIcon="google"></mat-icon>
+        Sign in with Google
+      </button>
+    </mat-card>
+  </form>
+</ng-template>
+
+<!--sign up form-->
+<ng-template #signUp>
+  <form [formGroup]="signUpForm" fxLayoutAlign="center" (ngSubmit)="onSignUp()">
+    <mat-card fxLayout="column" fxFlex="60" fxFlex.lt-sm="90">
+      <mat-card-title>Sign Up</mat-card-title>
+      <mat-form-field>
+        <input
+          matInput
+          placeholder="First Name"
+          formControlName="firstName"
+          required
+        />
+        <mat-error *ngIf="signUpForm.get('firstName').invalid"
+        >First name is required
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field>
+        <input matInput placeholder="Last Name" formControlName="lastName"/>
+      </mat-form-field>
+      <mat-form-field>
+        <input matInput placeholder="Email" formControlName="email" required/>
+        <mat-error *ngIf="signUpForm.get('email').hasError('required')">
+          E-mail is required
+        </mat-error>
+        <mat-error *ngIf="signUpForm.get('email').hasError('email')">
+          Invalid E-mail address
+        </mat-error>
+      </mat-form-field>
+      <div formGroupName="passwordGroup" fxLayout="row">
+        <mat-form-field fxFlex="50">
+          <input
+            matInput
+            type="password"
+            placeholder="Password"
+            formControlName="password"
+            required
+          />
+          <mat-error
+            *ngIf="
+              signUpForm.get('passwordGroup.password').hasError('minlength')
+            "
+          >
+            Passwords need to be 8 characters or longer
+          </mat-error>
+          <mat-error
+            *ngIf="
+              signUpForm.get('passwordGroup.password').hasError('required')
+            "
+          >
+            Please enter a password
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field fxFlex>
+          <input
+            matInput
+            type="password"
+            placeholder="Confirm Password"
+            formControlName="confirmPassword"
+            required
+          />
+        </mat-form-field>
+      </div>
+      <div class="overall-error">
+        <mat-error *ngIf="error">{{ error }}</mat-error>
+      </div>
+      <button
+        mat-raised-button
+        type="submit"
+        color="primary"
+        [disabled]="signUpForm.invalid"
+      >
+        Register
+      </button>
+      <button
+        mat-stroked-button
+        type="button"
+        class="id-provider"
+        (click)="onUseGoogle()"
+      >
+        <mat-icon svgIcon="google"></mat-icon>
+        Sign up with Google
+      </button>
+    </mat-card>
+  </form>
+</ng-template>

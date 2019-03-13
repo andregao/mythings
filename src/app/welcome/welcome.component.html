@@ -1,0 +1,44 @@
+<div
+  fxLayout="column"
+  fxLayoutAlign="start center"
+  *ngIf="content; else loading"
+>
+  <h1>{{ content.mainHeading }}</h1>
+  <h2 class="subtitle">{{ content.subHeading }}</h2>
+  <p class="intro">A todo list app that helps you manage tasks</p>
+  <div *ngIf="(isSignedIn$ | async); else signInButton">
+    <a mat-flat-button color="accent" routerLink="/home">Go to my list</a>
+  </div>
+  <ng-template #signInButton>
+    <a mat-flat-button color="accent" routerLink="/signin">Sign In</a>
+  </ng-template>
+  <mat-tab-group
+    mat-stretch-tabs
+    dynamicHeight
+    animationDuration="300ms"
+    backgroundColor="primary"
+  >
+    <mat-tab [label]="content.group1.name">
+      <div *ngFor="let section of content.group1.sections">
+        <h2>{{ section.title }}</h2>
+        <ul>
+          <li *ngFor="let item of section.items">{{ item }}</li>
+        </ul>
+      </div>
+    </mat-tab>
+    <mat-tab [label]="content.group2.name">
+      <div *ngFor="let section of content.group2.sections">
+        <h2>{{ section.title }}</h2>
+        <ul>
+          <li *ngFor="let item of section.items">{{ item }}</li>
+        </ul>
+      </div>
+    </mat-tab>
+    <mat-tab [label]="content.group3.name">
+      <p class="tab-group">
+        {{ content.group3.content }}
+      </p>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+<ng-template #loading>Loading Welcome Page...</ng-template>

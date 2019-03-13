@@ -1,0 +1,109 @@
+<mat-tab-group>
+  <!--TodoItems-->
+  <mat-tab label="Todos">
+    <div
+      *ngIf="todoTableData && todoTableData.data.length; else noCompletedTodo"
+    >
+      <mat-form-field>
+        <input
+          matInput
+          (keyup)="searchTodoTable($event.target.value)"
+          placeholder="Search"
+        />
+      </mat-form-field>
+      <div>
+        <table mat-table [dataSource]="todoTableData" matSort>
+          <ng-container matColumnDef="completed">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let todo">
+              <mat-checkbox
+                fxFlexAlign="baseline"
+                [checked]="todo.completed"
+                (change)="onTodoCheckboxChange(todo.id, $event)"
+              >
+              </mat-checkbox>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="title">
+            <th mat-header-cell *matHeaderCellDef>Title</th>
+            <td mat-cell *matCellDef="let todo">
+              {{ todo.title }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="project">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Project</th>
+            <td mat-cell *matCellDef="let todo">
+              {{ projectMap[todo.project] }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="completionDate">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              Completion Date
+            </th>
+            <td mat-cell *matCellDef="let todo">{{ todo.completionDate }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="todoTableColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: todoTableColumns"></tr>
+        </table>
+
+        <mat-paginator
+          [pageSizeOptions]="[10, 20]"
+          showFirstLastButtons
+        ></mat-paginator>
+      </div>
+    </div>
+    <ng-template #noCompletedTodo>
+      <p class="placeholder">
+        you don't have any completed todo items yet
+      </p>
+    </ng-template>
+  </mat-tab>
+
+  <!--Projects-->
+  <mat-tab label=" Projects">
+    <div *ngIf="completedProjects?.length; else noneCompleted">
+      <mat-form-field>
+        <input
+          matInput
+          (keyup)="searchProjectTable($event.target.value)"
+          placeholder="Search"
+        />
+      </mat-form-field>
+      <mat-table [dataSource]="projectTableData" matSort>
+        <ng-container matColumnDef="title">
+          <mat-header-cell *matHeaderCellDef mat-sort-header
+            >Title</mat-header-cell
+          >
+          <mat-cell *matCellDef="let project">
+            <mat-icon class="project-icon" mat-list-icon>list</mat-icon>
+            {{ project.title }}
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="completionDate">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            Completion Date
+          </mat-header-cell>
+          <mat-cell *matCellDef="let project">{{
+            project.completionDate
+          }}</mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="projectTableColumns"></mat-header-row>
+        <mat-row
+          class="project-rows"
+          *matRowDef="let row; columns: projectTableColumns"
+          (click)="onSetFilter(row.id)"
+        ></mat-row>
+      </mat-table>
+      <mat-paginator
+        [pageSizeOptions]="[10, 20]"
+        showFirstLastButtons
+      ></mat-paginator>
+    </div>
+    <ng-template #noneCompleted>
+      <p class="placeholder">
+        you don't have any completed project yet
+      </p>
+    </ng-template>
+  </mat-tab>
+</mat-tab-group>

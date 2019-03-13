@@ -1,0 +1,202 @@
+<div fxFlex="80" fxLayout="column" fxLayoutAlign="center stretch">
+  <!--project info area-->
+  <form
+    *ngIf="currentProject?.id.length === 20 || currentProject?.id === 'new'"
+    class="project-details"
+    fxLayout="column"
+    #projectInfoForm="ngForm"
+    (ngSubmit)="onSaveProjectInfo(); projectInfoForm.resetForm()"
+  >
+    <mat-form-field
+      class="project-title"
+      appearance="standard"
+      fxFlexAlign="start"
+    >
+      <mat-label>project name</mat-label>
+      <input
+        matInput
+        placeholder="enter a project name"
+        name="projectName"
+        #projectName
+        required
+        [(ngModel)]="currentProject.title"
+      />
+    </mat-form-field>
+
+    <mat-form-field class="project-notes" appearance="outline">
+      <mat-label>notes</mat-label>
+      <textarea
+        matInput
+        placeholder="notes for this project"
+        cdkTextareaAutosize
+        name="projectNotes"
+        [(ngModel)]="currentProject.notes"
+      ></textarea>
+    </mat-form-field>
+    <mat-checkbox
+      class="checkbox-complete"
+      *ngIf="currentProject?.id.length === 20"
+      [checked]="currentProject.completed"
+      [(ngModel)]="currentProject.completed"
+      name="projectCompleted"
+      >mark project as completed
+    </mat-checkbox>
+    <div fxLayout="row">
+      <button
+        type="submit"
+        fxFlex
+        mat-stroked-button
+        color="accent"
+        [disabled]="!projectInfoForm.valid || !projectInfoForm.dirty"
+      >
+        Save
+      </button>
+      <button type="button" mat-button (click)="onDeleteProject()">
+        <mat-icon aria-label="delete project icon">delete_forever</mat-icon>
+        Delete Project
+      </button>
+    </div>
+  </form>
+
+  <!--todoItems area-->
+  <div *ngIf="currentProject?.id !== 'new'">
+    <!--add todoItem form-->
+    <form class="add-todo" (ngSubmit)="onAddTodo()">
+      <mat-form-field>
+        <input
+          class="todo-input"
+          matInput
+          placeholder="Add a todo item"
+          [(ngModel)]="newTodo.title"
+          name="todoInput"
+        />
+      </mat-form-field>
+    </form>
+
+    <!--list of todoItems-->
+    <!--active todoItems-->
+    <div *ngIf="activeTodos?.length || completedTodos?.length; else noneTodo">
+      <mat-accordion cdkDropList (cdkDropListDropped)="onTodoDrop($event)">
+        <mat-expansion-panel
+          *ngFor="let todo of activeTodos"
+          (opened)="expansionControl[todo.id] = true"
+          (closed)="expansionControl[todo.id] = false"
+          [expanded]="expansionControl[todo.id]"
+          cdkDrag
+          cdkDragLockAxis="y"
+          [cdkDragDisabled]="expansionControl[todo.id]"
+        >
+          <mat-expansion-panel-header cdkDragHandle >
+            <span class="mat-content" *ngIf="!expansionControl[todo.id]; else shortHeader">
+              <mat-checkbox
+                fxFlexAlign="center"
+                (click)="$event.stopPropagation()"
+                [checked]="todo.completed"
+                (change)="onTodoCheckboxChange(todo.id, $event)"
+              >
+              </mat-checkbox>
+              <span
+                class="todo-title"
+                fxFlexAlign="center"
+                [ngClass]="{ completed: todo.completed }"
+              >
+                {{ todo.title }}
+              </span>
+            </span>
+            <ng-template #shortHeader>Edit Todo:</ng-template>
+          </mat-expansion-panel-header>
+          <form #todoEditForm="ngForm">
+            <div fxLayout="row">
+              <mat-checkbox
+                fxFlexAlign="center"
+                [checked]="todo.completed"
+                (change)="onTodoCheckboxChange(todo.id, $event)"
+              >
+              </mat-checkbox>
+              <input
+                class="todo-title-edit"
+                matInput
+                required
+                placeholder="edit this todo"
+                [(ngModel)]="todo.title"
+                name="todoTitle"
+              />
+              <mat-form-field>
+                <mat-select
+                  placeholder="assign to"
+                  [(ngModel)]="todo.project"
+                  name="todoProject"
+                >
+                  <mat-option value="inbox">
+                    Inbox
+                  </mat-option>
+                  <mat-option value="someday">
+                    Someday
+                  </mat-option>
+                  <mat-option
+                    *ngFor="let project of activeProjects"
+                    [value]="project.id"
+                  >
+                    {{ project.title }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <mat-action-row>
+              <button
+                type="submit"
+                mat-stroked-button
+                color="accent"
+                fxFlex
+                [disabled]="todoEditForm.pristine || todoEditForm.invalid"
+                (click)="
+                  onEditTodo({
+                    id: todo.id,
+                    title: todo.title,
+                    project: todo.project
+                  })
+                "
+              >
+                Save
+              </button>
+              <button mat-button (click)="onDeleteTodo(todo.id)">
+                <mat-icon aria-label="delete todo icon"
+                  >delete_forever
+                </mat-icon>
+                Delete Todo
+              </button>
+            </mat-action-row>
+          </form>
+        </mat-expansion-panel>
+      </mat-accordion>
+
+      <!--completed todoItems-->
+      <mat-list dense>
+        <div *ngIf="completedTodos?.length">
+          <div class="divider-heading">Completed</div>
+          <mat-divider></mat-divider>
+        </div>
+        <mat-list-item *ngFor="let todo of completedTodos">
+          <mat-checkbox
+            fxFlexAlign="baseline"
+            [checked]="todo.completed"
+            (change)="onTodoCheckboxChange(todo.id, $event)"
+          >
+          </mat-checkbox>
+          <span
+            class="todo-title"
+            fxFlexAlign="baseline"
+            [ngClass]="{ completed: todo.completed }"
+          >
+            {{ todo.title }}
+          </span>
+        </mat-list-item>
+      </mat-list>
+    </div>
+
+    <!--in case of no todoItem-->
+    <ng-template #noneTodo>
+      <p class="placeholder">nothing to do yet</p>
+    </ng-template>
+  </div>
+</div>

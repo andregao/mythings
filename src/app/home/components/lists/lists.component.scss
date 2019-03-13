@@ -1,0 +1,56 @@
+mat-checkbox {
+  font-size: 1rem;
+
+  &.checkbox-complete {
+    font-size: .8rem;
+    color: dimgray;
+  }
+}
+
+mat-form-field {
+  width: 80%;
+  &.project-title {
+    margin-top: 1rem;
+  }
+}
+
+form {
+  &.add-todo {
+    margin-top: 1rem;
+  }
+}
+
+input {
+  &.todo-title-edit {
+    font-size: 1rem;
+    margin-left: .5rem;
+  }
+
+  &.todo-input {
+  }
+}
+
+mat-divider {
+  margin-bottom: 1rem;
+}
+
+.divider-heading {
+  margin-top: 1rem;
+  font-size: .8rem;
+}
+
+.completed {
+  color: darkgray;
+}
+
+.todo-title {
+  margin-left: .5rem;
+  font-size: 1rem;
+}
+
+p.placeholder {
+  font-size: 1rem;
+  font-style: italic;
+  color: darkgray;
+  margin-left: 2rem;
+}

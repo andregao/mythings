@@ -1,0 +1,22 @@
+p.placeholder {
+  font-size: 1rem;
+  font-style: italic;
+  color: darkgray;
+  margin-left: 2rem;
+}
+
+table, mat-table {
+  width: 80%;
+
+  mat-cell {
+    cursor: pointer;
+  }
+
+  .project-rows:hover {
+    background: #f5f5f5
+  }
+
+  .project-icon {
+    margin-right: .4rem;
+  }
+}

@@ -1,0 +1,28 @@
+h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+h2 {
+  font-size: 1rem;
+  font-weight: lighter;
+  &.subtitle {
+    font-size: .8rem;
+  }
+}
+
+li {
+  margin-bottom: .5rem;
+}
+
+mat-tab-group {
+  width: 70%;
+  margin: 2rem 0;
+}
+
+p {
+  &.tab-group {
+    padding: 0 1.5rem;
+    font-weight: lighter;
+  }
+}
