@@ -2,18 +2,14 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { Observable, Subscription } from 'rxjs';
-import { debounceTime, map, takeUntil, tap } from 'rxjs/operators';
+import { debounceTime, map, tap } from 'rxjs/operators';
 import { MatIconRegistry } from '@angular/material';
 import { DomSanitizer } from '@angular/platform-browser';
 import { AuthService } from '../../core/auth.service';
 import { DataService } from '../../core/data.service';
 import { AppService } from '../../core/app.service';
 import * as fromAuth from '../reducers';
-import {
-  AuthPageActions,
-  AuthActions,
-  AuthApiActions,
-} from '../actions';
+import { AuthPageActions, } from '../actions';
 import { select, Store } from '@ngrx/store';
 import { SignUpInfo } from '../../shared/models/user.model';
 
@@ -106,65 +102,15 @@ export class AuthComponent implements OnInit, OnDestroy {
 
   onSignIn() {
     this.store.dispatch(new AuthPageActions.SignIn(this.signInForm.value));
-
-    /*
-        const {email, password} = this.signInForm.value;
-        this.appService.startLoading();
-        this.error = '';
-        this.authService.signInWithEmail(email, password)
-          .then(user => console.log('signInWithEmailAndPassword promise fulfilled:', user))
-          .catch(error => {
-            this.appService.stopLoading();
-            switch (error.code) {
-              case 'auth/wrong-password':
-                return this.error = 'Wrong password';
-              case 'auth/user-not-found':
-                return this.error = 'User does not exist';
-              case 'auth/invalid-email':
-                return this.error = 'Invalid email address';
-            }
-          });
-    */
   }
 
   onSignUp() {
     const {firstName, lastName, email, passwordGroup: {confirmPassword: password}} = this.signUpForm.value;
     const signUpInfo: SignUpInfo = {email, password, firstName, lastName};
     this.store.dispatch(new AuthPageActions.SignUp(signUpInfo));
-
-    /*
-    this.appService.startLoading();
-    this.error = '';
-    const {firstName, lastName, email, passwordGroup: {confirmPassword}} = this.signUpForm.value;
-    this.authService.signUpWithEmail(email, confirmPassword, `${firstName} ${lastName}`)
-      .catch(error => {
-        this.appService.stopLoading();
-        switch (error.code) {
-          case 'auth/email-already-in-use':
-            return this.error = 'User already exist';
-          case 'auth/invalid-email':
-            return this.error = 'Invalid email address';
-          case 'auth/weak-password':
-            return this.error = 'Password is too simple';
-        }
-      });
-    */
   }
 
   onUseGoogle() {
     this.store.dispatch(new AuthPageActions.GoogleSignIn());
-    /*
-    this.appService.startLoading();
-    this.authService.signInWithGoogle()
-      .catch(error => {
-        this.appService.stopLoading();
-        switch (error.code) {
-          case 'auth/popup-blocked':
-            return this.error = 'Pop up window blocked by browser';
-          case 'auth/popup-closed-by-user':
-            return this.error = 'Pop up window closed without signing in';
-        }
-      });
-    */
   }
 }

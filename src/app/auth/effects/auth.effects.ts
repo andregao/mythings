@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
-import { catchError, exhaustMap, map, switchMap, tap } from 'rxjs/operators';
+import { catchError, exhaustMap, map, switchMap, take, tap } from 'rxjs/operators';
 import { from, of } from 'rxjs';
 import { Actions, Effect, ofType } from '@ngrx/effects';
-import { Router } from '@angular/router';
 
 import { AuthService } from '../../core/auth.service';
 import { DataService } from '../../core/data.service';
 import { Credentials, SignUpInfo } from '../../shared/models/user.model';
 import { AuthActions, AuthApiActions, AuthPageActions, } from '../actions';
+import { AppService } from '../../core/app.service';
 
 @Injectable()
 export class AuthEffects {
@@ -15,7 +15,7 @@ export class AuthEffects {
     private actions$: Actions<AuthPageActions.AuthPageActionsUnion>,
     private authService: AuthService,
     private dataService: DataService,
-    private router: Router,
+    private appService: AppService,
   ) {
   }
 
@@ -25,10 +25,17 @@ export class AuthEffects {
     map(action => action.payload),
     switchMap(({email, password}: Credentials) =>
       this.authService.signInWithEmail(email, password).pipe(
-        map(signedIn => new AuthActions.GetUserData(signedIn.user.uid)),
+        map(signedIn => new AuthApiActions.SignInSuccess(signedIn.user.uid)),
         catchError(error => of(new AuthApiActions.SignInFailure(error.code))),
       ),
     ),
+  );
+
+  @Effect()
+  signInSuccess$ = this.actions$.pipe(
+    ofType(AuthApiActions.AuthApiActionTypes.SignInSuccess),
+    map((action: AuthApiActions.SignInSuccess) => action.payload),
+    map(id => new AuthActions.GetUserData(id)),
   );
 
   @Effect({dispatch: false})
@@ -41,7 +48,39 @@ export class AuthEffects {
   googleSignInSuccess$ = this.actions$.pipe(
     ofType(AuthApiActions.AuthApiActionTypes.GoogleSignInSuccess),
     map((action: AuthApiActions.GoogleSignInSuccess) => action.payload),
-    map(userData => new AuthActions.UpdateUserData(userData)),
+    map(userData => new AuthActions.GetUserDataGoogleSignIn(userData)),
+  );
+
+  @Effect()
+  getUserData$ = this.actions$.pipe(
+    ofType(AuthActions.AuthActionTypes.GetUserData),
+    map((action: AuthActions.GetUserData) => action.payload),
+    switchMap(id => this.dataService.getUserData(id).pipe(
+      take(1),
+      map(userData => new AuthActions.GetUserDataSuccess(userData)),
+      catchError(error => of(new AuthApiActions.SignInFailure(error.code))),
+    )),
+  );
+
+  @Effect({dispatch: false})
+  getUserDataGoogleSignIn$ = this.actions$.pipe(
+    ofType(AuthActions.AuthActionTypes.GetUserDataGoogleSignIn),
+    map((action: AuthActions.GetUserDataGoogleSignIn) => action.payload),
+    tap(data => this.dataService.getUserDataGoogle(data)),
+  );
+
+  @Effect({dispatch: false})
+  initializeNewUser$ = this.actions$.pipe(
+    ofType(AuthActions.AuthActionTypes.InitializeNewUser),
+    map((action: AuthActions.InitializeNewUser) => action.payload),
+    tap(data => this.dataService.initializeNewUser(data)),
+  );
+
+  @Effect({dispatch: false})
+  getUserDataSuccess$ = this.actions$.pipe(
+    ofType(AuthActions.AuthActionTypes.GetUserDataSuccess),
+    map((action: AuthActions.GetUserDataSuccess) => action),
+    tap(() => this.appService.navigate('/home')),
   );
 
   @Effect({dispatch: false})
@@ -52,56 +91,23 @@ export class AuthEffects {
   );
 
   @Effect()
-  UpdateUserDataSuccess$ = this.actions$.pipe(
-    ofType(AuthActions.AuthActionTypes.UpdateUserDataSuccess, AuthActions.AuthActionTypes.UpdateUserDataSkipped),
-    map((action: AuthActions.UpdateUserDataSuccess | AuthActions.UpdateUserDataSkipped) => action.payload),
-    map(id => new AuthActions.GetUserData(id)),
-  );
-
-  @Effect()
-  getUserData$ = this.actions$.pipe(
-    ofType(AuthActions.AuthActionTypes.GetUserData),
-    map((action: AuthActions.GetUserData) => action.payload),
-    switchMap(id => this.dataService.getUserData(id).pipe(
-      // takeUntil(this.actions$.pipe(ofType(AuthActions.AuthActionTypes.SignOut))),
-      map(userData => new AuthActions.GetUserDataSuccess(userData)),
-      catchError(error => of(new AuthApiActions.SignInFailure(error))),
-    )),
-  );
-
-  @Effect({dispatch: false})
-  getUserDataSuccess$ = this.actions$.pipe(
-    ofType(AuthActions.AuthActionTypes.GetUserDataSuccess),
-    tap(() => this.router.navigateByUrl('/home')),
-  );
-
-  @Effect()
   signUp$ = this.actions$.pipe(
     ofType(AuthPageActions.AuthPageActionTypes.SignUp),
-    map(action => action.payload),
+    map((action: AuthPageActions.SignUp) => action.payload),
     exhaustMap((info: SignUpInfo) =>
       from(this.authService.signUpWithEmail(info.email, info.password)).pipe(
         map(signedUp => {
-          const userDoc = {
+          const userData = {
             id: signedUp.user.uid,
             email: signedUp.user.email,
             displayName: `${info.firstName} ${info.lastName}`,
             photoURL: null,
           };
-          return new AuthActions.CreateUserData(userDoc);
+          return new AuthActions.InitializeNewUser(userData);
         }),
         catchError(error => of(new AuthApiActions.SignUpFailure(error.code))),
       )
     ));
-
-
-  @Effect()
-  createUserData = this.actions$.pipe(
-    ofType(AuthActions.AuthActionTypes.CreateUserData),
-    map((action: AuthActions.CreateUserData) => action.payload),
-    switchMap(userDoc => from(this.dataService.createNewUser(userDoc))),
-    map(userData => new AuthActions.GetUserDataSuccess(userData)),
-  );
 
   @Effect()
   signOut$ = this.actions$.pipe(
@@ -113,6 +119,6 @@ export class AuthEffects {
   @Effect({dispatch: false})
   signOutSuccess$ = this.actions$.pipe(
     ofType(AuthActions.AuthActionTypes.SignOutSuccess),
-    tap(() => this.router.navigateByUrl('/')),
+    tap(() => this.appService.navigate('/')),
   );
 }

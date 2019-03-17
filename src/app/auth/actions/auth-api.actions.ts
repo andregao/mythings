@@ -8,13 +8,15 @@ export enum AuthApiActionTypes {
   SignUpSuccess = '[Auth API] Sign Up Success',
   SignUpFailure = '[Auth API] Sign Up Failure',
   NotSignedIn = '[Auth API] Not Signed In',
+  StartCheckingAuth = '[Auth API] Start Checking Auth',
+  StopCheckingAuth = '[Auth API] Stop Checking Auth',
 }
 
 
 export class SignInSuccess implements Action {
   readonly type = AuthApiActionTypes.SignInSuccess;
 
-  constructor(public payload: UserDoc) {
+  constructor(public payload: string) {
   }
 }
 
@@ -50,10 +52,20 @@ export class NotSignedIn implements Action {
   readonly type = AuthApiActionTypes.NotSignedIn;
 }
 
+export class StartCheckingAuth implements Action {
+  readonly type = AuthApiActionTypes.StartCheckingAuth;
+}
+
+export class StopCheckingAuth implements Action {
+  readonly type = AuthApiActionTypes.StopCheckingAuth;
+}
+
 export type AuthApiActionsUnion =
   | SignInSuccess
   | GoogleSignInSuccess
   | SignUpSuccess
   | SignInFailure
   | SignUpFailure
-  | NotSignedIn;
+  | NotSignedIn
+  | StartCheckingAuth
+  | StopCheckingAuth;

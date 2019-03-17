@@ -3,7 +3,6 @@ export interface UserDoc {
   email: string;
   displayName: string;
   photoURL?: string;
-  updatedOn?: any;
   role?: string;
   signUpDate?: any;
   projectIds?: string[];

@@ -5,6 +5,11 @@ import { map } from 'rxjs/operators';
 import * as fromLoader from '../actions/loader.actions';
 import * as welcomeActions from '../../info/actions/welcome.actions';
 
+/*
+Map action events to each loading status,
+spread them into effect type filters,
+dispatch actual actions that change the loading state
+*/
 const uploadActions = [
   AuthPageActions.AuthPageActionTypes.SignIn,
   AuthPageActions.AuthPageActionTypes.SignUp,
@@ -13,20 +18,21 @@ const uploadActions = [
 ];
 
 const downloadActions = [
+  // auth
   AuthActions.AuthActionTypes.GetUserData,
+  AuthActions.AuthActionTypes.GetUserDataGoogleSignIn,
+  AuthActions.AuthActionTypes.InitializeNewUser,
+  // info
   welcomeActions.WelcomeActionTypes.GetContent,
 ];
 
 const stopActions = [
-  // auth actions
-  // AuthActions.AuthActionTypes.UpdateUserDataSuccess,
-  AuthActions.AuthActionTypes.GetUserDataSuccess,
-  AuthApiActions.AuthApiActionTypes.SignInSuccess,
+  // auth
   AuthApiActions.AuthApiActionTypes.SignInFailure,
-  AuthApiActions.AuthApiActionTypes.SignUpSuccess,
   AuthApiActions.AuthApiActionTypes.SignUpFailure,
   AuthApiActions.AuthApiActionTypes.NotSignedIn,
-  // info actions
+  AuthActions.AuthActionTypes.GetUserDataSuccess,
+  // info
   welcomeActions.WelcomeActionTypes.GetContentSuccess,
   welcomeActions.WelcomeActionTypes.GetContentFailure,
   welcomeActions.WelcomeActionTypes.GetContentSkpped,

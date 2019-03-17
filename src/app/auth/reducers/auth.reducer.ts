@@ -18,32 +18,11 @@ export function reducer(
 ): State {
   switch (action.type) {
 
-    case AuthApiActions.AuthApiActionTypes.SignInFailure: {
-      return {
-        ...state,
-        user: null,
-        error: getErrorMessage(action.payload),
-      };
-    }
-
     case AuthActions.AuthActionTypes.GetUserDataSuccess: {
       return {
         ...state,
         user: action.payload,
         error: '',
-      };
-    }
-
-    case AuthApiActions.AuthApiActionTypes.SignInSuccess: {
-      return {
-        ...state,
-        user: action.payload,
-      };
-    }
-    case AuthApiActions.AuthApiActionTypes.SignUpSuccess: {
-      return {
-        ...state,
-        user: action.payload,
       };
     }
     case AuthPageActions.AuthPageActionTypes.SignIn: {
@@ -64,17 +43,19 @@ export function reducer(
         error: '',
       };
     }
+    case AuthApiActions.AuthApiActionTypes.SignInFailure: {
+      return {
+        ...state,
+        user: null,
+        error: getErrorMessage(action.payload),
+      };
+    }
 
     case AuthApiActions.AuthApiActionTypes.SignUpFailure: {
       return {
         ...state,
+        user: null,
         error: getErrorMessage(action.payload),
-      };
-    }
-    case AuthActions.AuthActionTypes.GetUserData: {
-      return {
-        ...state,
-        error: '',
       };
     }
     case AuthActions.AuthActionTypes.SignOutSuccess: {

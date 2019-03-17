@@ -21,7 +21,7 @@ import WhereFilterOp = firebase.firestore.WhereFilterOp;
 export class DataService {
   private dbEnv: string = environment.dbEnvironment;
   private userDoc: AngularFirestoreDocument<UserDoc>;
-  private usersCol: AngularFirestoreCollection<UserDoc>;
+  private usersCol: AngularFirestoreCollection<UserDoc> = this.afs.collection(this.dbEnv);
   private todosCol: AngularFirestoreCollection<Todo>;
   private projectsCol: AngularFirestoreCollection<Project>;
   private headingsCol: AngularFirestoreCollection<Heading>;
@@ -32,11 +32,11 @@ export class DataService {
     private appService: AppService,
     private store: Store<State>
   ) {
-    // set database environment to dev or prod
-    this.usersCol = afs.collection(this.dbEnv);
   }
 
-
+  /*
+  Users CRUD
+  */
   setCurrentUserDoc(id: string): void {
     this.userDoc = this.usersCol.doc(id);
     this.todosCol = this.userDoc.collection('todos');
@@ -45,48 +45,43 @@ export class DataService {
     this.checklistsCol = this.userDoc.collection('checklists');
   }
 
-  getUserData(id: string) {
-    this.setCurrentUserDoc(id);
-    return this.userDoc.valueChanges().pipe(take(1));
-  }
-
-  async createNewUser(user: UserDoc) {
-    await this.initializeNewUser(user);
-    const userData = await this.userDoc.ref.get();
-    return userData.data() as UserDoc;
-  }
-
-  // updates db user data depending on whether it's a new user
-  async updateUserDoc(userData) {
-    this.setCurrentUserDoc(userData.id);
-
+  async getUserDataGoogle(user: UserDoc) {
+    this.setCurrentUserDoc(user.id);
     const userDocRef = await this.userDoc.ref.get();
     if (userDocRef.exists) {
-      // check if user data is over 30 days old
-      const userDoc = userDocRef.data() as UserDoc;
-      if (Date.now() - userDoc.updatedOn.toDate().getTime() > 2592000000) {
-        userData.updatedOn = firestore.FieldValue.serverTimestamp();
-        await this.userDoc.update(userData);
-        this.store.dispatch(new AuthActions.GetUserDataSuccess(userData));
+      // check if name or photo changed
+      const {displayName, photoURL} = userDocRef.data() as UserDoc;
+      if (user.displayName === displayName && user.photoURL === photoURL) {
+        this.store.dispatch(new AuthActions.GetUserDataSuccess(userDocRef.data() as UserDoc));
       } else {
-        this.store.dispatch(new AuthActions.GetUserDataSuccess(userDoc));
+        this.store.dispatch(new AuthActions.UpdateUserData(user));
       }
     } else {
-      // new user signed in
-      const data = await this.createNewUser(userData);
-      this.store.dispatch(new AuthActions.GetUserDataSuccess(data));
+      this.store.dispatch(new AuthActions.InitializeNewUser(user));
     }
   }
 
-  initializeNewUser(user: UserDoc) {
+  getUserData(id: string): Observable<UserDoc> {
+    this.setCurrentUserDoc(id);
+    return this.usersCol.doc<UserDoc>(id).valueChanges();
+  }
+
+  updateUserDoc(userData) {
+    return this.userDoc.update(userData);
+  }
+
+  async initializeNewUser(user: UserDoc) {
     user.projectIds = [];
-    user.signUpDate = user.updatedOn = firestore.FieldValue.serverTimestamp();
+    user.signUpDate = firestore.FieldValue.serverTimestamp();
     this.setCurrentUserDoc(user.id);
     const batch = this.afs.firestore.batch();
     batch.set(this.userDoc.ref, user);
     batch.set(this.projectsCol.doc('inbox').ref, {id: 'inbox', title: 'Inbox', todoIds: []});
     batch.set(this.projectsCol.doc('someday').ref, {id: 'someday', title: 'Someday', todoIds: []});
-    return batch.commit();
+    await batch.commit();
+    // return user data after initialization
+    const userData = await this.userDoc.ref.get();
+    this.store.dispatch(new AuthActions.GetUserDataSuccess(userData.data() as UserDoc));
   }
 
   // Static content
@@ -96,7 +91,9 @@ export class DataService {
     );
   }
 
-  // TodoItems CRUD
+  /*
+  Todos CRUD
+  */
   getTodos(field: string, opStr: WhereFilterOp, value: any): Observable<Todo[]> {
     return this.userDoc.collection<Todo>(
       'todos',
@@ -169,7 +166,9 @@ export class DataService {
     return batch.commit();
   }
 
-  // Projects CRUD
+  /*
+  Projects CRUD
+  */
   getProject(id: string) {
     if (id === 'new') {
       this.appService.stopLoading();

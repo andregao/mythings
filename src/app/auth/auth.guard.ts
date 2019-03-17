@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthService } from '../core/auth.service';
-import { map, take, tap } from 'rxjs/operators';
+import { map, take, takeUntil, tap } from 'rxjs/operators';
 import { DataService } from '../core/data.service';
 import { select, Store } from '@ngrx/store';
 import * as fromAuth from './reducers';
@@ -20,7 +20,7 @@ export class AuthGuard implements CanActivate {
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
     return this.store.pipe(
       select(fromAuth.getSignedIn),
-      take(1),
+      takeUntil(this.router.events),
       tap(signedIn => {
         if (!signedIn) {
           this.router.navigateByUrl('/signin');

@@ -2,12 +2,12 @@ import { Action } from '@ngrx/store';
 import { UserDoc } from '../../shared/models/user.model';
 
 export enum AuthActionTypes {
+  GetUserDataGoogleSignIn = '[Auth] Get User Data Google Sign In',
   GetUserData = '[Auth] Get User Data',
+  InitializeNewUser = '[Auth] Initialize New User',
   GetUserDataSuccess = '[Auth] Get User Data Success',
   UpdateUserData = '[Auth] Update User Data',
-  UpdateUserDataSkipped = '[Auth] Update User Data Skipped',
   UpdateUserDataSuccess = '[Auth] Update User Data Success',
-  CreateUserData = '[Auth] Create User Data',
   SignOut = '[Auth] Sign Out',
   SignOutSuccess = '[Auth] Sign Out Success',
 }
@@ -16,6 +16,20 @@ export class GetUserData implements Action {
   readonly type = AuthActionTypes.GetUserData;
 
   constructor(public payload: string) {
+  }
+}
+
+export class GetUserDataGoogleSignIn implements Action {
+  readonly type = AuthActionTypes.GetUserDataGoogleSignIn;
+
+  constructor(public payload: UserDoc) {
+  }
+}
+
+export class InitializeNewUser implements Action {
+  readonly type = AuthActionTypes.InitializeNewUser;
+
+  constructor(public payload: UserDoc) {
   }
 }
 
@@ -33,23 +47,10 @@ export class UpdateUserData implements Action {
   }
 }
 
-export class UpdateUserDataSkipped implements Action {
-  readonly type = AuthActionTypes.UpdateUserDataSkipped;
-
-  constructor(public payload: string) {
-  }
-}
-
 export class UpdateUserDataSuccess implements Action {
   readonly type = AuthActionTypes.UpdateUserDataSuccess;
 
   constructor(public payload: string) {
-  }
-}
-export class CreateUserData implements Action {
-  readonly type = AuthActionTypes.CreateUserData;
-
-  constructor(public payload: UserDoc) {
   }
 }
 
@@ -64,10 +65,10 @@ export class SignOutSuccess implements Action {
 
 export type AuthActionsUnion =
   | GetUserData
+  | GetUserDataGoogleSignIn
+  | InitializeNewUser
   | GetUserDataSuccess
   | UpdateUserData
-  | UpdateUserDataSkipped
   | UpdateUserDataSuccess
-  | CreateUserData
   | SignOut
   | SignOutSuccess;

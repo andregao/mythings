@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Title } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +13,15 @@ export class AppService {
   private loadingType = new BehaviorSubject<string>('indeterminate');
   loadingType$ = this.loadingType.asObservable();
 
-  constructor(private titleService: Title) {
+  constructor(
+    private titleService: Title,
+    private router: Router,
+    private ngZone: NgZone, // workaround for ngZone failure when redirect from Google
+  ) {
+  }
+
+  navigate(route: string) {
+    this.ngZone.run(() => this.router.navigateByUrl(route)).then();
   }
 
   startLoading(type: string = 'indeterminate') {
