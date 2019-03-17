@@ -1,16 +1,19 @@
 import { environment } from '../../environments/environment';
 import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from '@angular/fire/firestore';
 import { firestore } from 'firebase/app';
-import WhereFilterOp = firebase.firestore.WhereFilterOp;
 import { map, take, tap } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { Injectable } from '@angular/core';
-import { UserDoc } from '../shared/models/user-doc.model';
+import { UserDoc } from '../shared/models/user.model';
 import { Todo } from '../shared/models/todo.model';
 import { Project } from '../shared/models/project.model';
 import { Heading } from '../shared/models/heading.model';
 import { Checklist } from '../shared/models/checklist.model';
 import { AppService } from './app.service';
+import { Store } from '@ngrx/store';
+import { State } from '../app.state';
+import { AuthActions } from '../auth/actions';
+import WhereFilterOp = firebase.firestore.WhereFilterOp;
 
 @Injectable({
   providedIn: 'root'
@@ -27,16 +30,12 @@ export class DataService {
   constructor(
     private afs: AngularFirestore,
     private appService: AppService,
+    private store: Store<State>
   ) {
     // set database environment to dev or prod
     this.usersCol = afs.collection(this.dbEnv);
   }
 
-  // work with Auth on user data
-  setCurrentUser(user) {
-    this.setCurrentUserDoc(user.uid);
-    return this.getUserData();
-  }
 
   setCurrentUserDoc(id: string): void {
     this.userDoc = this.usersCol.doc(id);
@@ -46,43 +45,45 @@ export class DataService {
     this.checklistsCol = this.userDoc.collection('checklists');
   }
 
-  async getUserData(): Promise<UserDoc> {
-    const doc = await this.userDoc.ref.get();
-    if (doc.exists) {
-      const data = doc.data();
-      return data as UserDoc;
-    } else {
-      console.log('no user data');
-      return null;
-    }
+  getUserData(id: string) {
+    this.setCurrentUserDoc(id);
+    return this.userDoc.valueChanges().pipe(take(1));
+  }
+
+  async createNewUser(user: UserDoc) {
+    await this.initializeNewUser(user);
+    const userData = await this.userDoc.ref.get();
+    return userData.data() as UserDoc;
   }
 
   // updates db user data depending on whether it's a new user
   async updateUserDoc(userData) {
-    // console.log('updating user document', userData);
-    this.setCurrentUserDoc(userData.uid);
-    const userDocData = {
-      id: userData.uid,
-      email: userData.email,
-      displayName: userData.displayName,
-      photoURL: userData.photoURL,
-    };
+    this.setCurrentUserDoc(userData.id);
+
     const userDocRef = await this.userDoc.ref.get();
     if (userDocRef.exists) {
-      // console.log('return user signed in');
-      return await this.userDoc.update(userDocData);
+      // check if user data is over 30 days old
+      const userDoc = userDocRef.data() as UserDoc;
+      if (Date.now() - userDoc.updatedOn.toDate().getTime() > 2592000000) {
+        userData.updatedOn = firestore.FieldValue.serverTimestamp();
+        await this.userDoc.update(userData);
+        this.store.dispatch(new AuthActions.GetUserDataSuccess(userData));
+      } else {
+        this.store.dispatch(new AuthActions.GetUserDataSuccess(userDoc));
+      }
     } else {
-      // console.log('new user signed in');
-      return await this.initializeNewUser(userDocData);
+      // new user signed in
+      const data = await this.createNewUser(userData);
+      this.store.dispatch(new AuthActions.GetUserDataSuccess(data));
     }
   }
 
-  initializeNewUser(data: UserDoc) {
-    data.projectIds = [];
-    data.signUpDate = firestore.FieldValue.serverTimestamp();
-    // console.log('initializing data', data);
+  initializeNewUser(user: UserDoc) {
+    user.projectIds = [];
+    user.signUpDate = user.updatedOn = firestore.FieldValue.serverTimestamp();
+    this.setCurrentUserDoc(user.id);
     const batch = this.afs.firestore.batch();
-    batch.set(this.userDoc.ref, data);
+    batch.set(this.userDoc.ref, user);
     batch.set(this.projectsCol.doc('inbox').ref, {id: 'inbox', title: 'Inbox', todoIds: []});
     batch.set(this.projectsCol.doc('someday').ref, {id: 'someday', title: 'Someday', todoIds: []});
     return batch.commit();
@@ -90,7 +91,9 @@ export class DataService {
 
   // Static content
   getWelcomeContent() {
-    return this.afs.doc('static/welcome').ref.get();
+    return this.afs.doc('static/welcome').valueChanges().pipe(
+      take(1),
+    );
   }
 
   // TodoItems CRUD

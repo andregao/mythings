@@ -1,0 +1,23 @@
+import { Component, OnInit } from '@angular/core';
+import { select, Store } from '@ngrx/store';
+import * as fromRoot from '../../../app.state';
+
+@Component({
+  selector: 'mt-loading',
+  templateUrl: './loading.component.html',
+  styleUrls: ['./loading.component.scss']
+})
+export class LoadingComponent implements OnInit {
+  // @Input() mode: 'query' | 'indeterminate';
+  // @Input() show: boolean;
+  show$ = this.store.pipe(select(fromRoot.isAppLoading));
+  mode$ = this.store.pipe(select(fromRoot.getLoaderType));
+
+
+  constructor(private store: Store<fromRoot.State>) {
+  }
+
+  ngOnInit() {
+  }
+
+}

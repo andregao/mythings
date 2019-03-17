@@ -5,18 +5,23 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SharedModule } from './shared/shared.module';
-import { WelcomeComponent } from './welcome/welcome.component';
+import { WelcomeComponent } from './info/components/welcome/welcome.component';
 import { AngularFireModule } from '@angular/fire';
 import { environment } from '../environments/environment';
-import { AngularFirestoreModule, FirestoreSettingsToken } from '@angular/fire/firestore';
+import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { AngularFireAuthModule } from '@angular/fire/auth';
 import { AuthModule } from './auth/auth.module';
 import { CoreModule } from './core/core.module';
+import { StoreDevtoolsModule } from '@ngrx/store-devtools';
+import { EffectsModule } from '@ngrx/effects';
+import { StoreModule } from '@ngrx/store';
+import { reducers, effects } from './app.state';
+import { InfoModule } from './info/info.module';
 
 @NgModule({
   declarations: [
     AppComponent,
-    WelcomeComponent
+    // WelcomeComponent
   ],
   imports: [
     BrowserModule,
@@ -26,12 +31,17 @@ import { CoreModule } from './core/core.module';
     AppRoutingModule,
     BrowserAnimationsModule,
     CoreModule,
-    SharedModule,
+    // SharedModule,
+    InfoModule,
     AuthModule,
+    StoreModule.forRoot(reducers),
+    EffectsModule.forRoot(effects),
+    StoreDevtoolsModule.instrument({
+      name: 'MaThangs App',
+      logOnly: environment.production,
+    })
   ],
-  providers: [
-    {provide: FirestoreSettingsToken, useValue: {}}
-  ],
+  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule {

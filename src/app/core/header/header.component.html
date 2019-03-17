@@ -4,7 +4,7 @@
 
   <!--signed in state-->
   <div
-    *ngIf="(authService.currentUser$ | async) as currentUser; else signedOut"
+    *ngIf="(currentUser$ | async) as currentUser; else signedOut"
   >
     <button mat-flat-button color="primary" [matMenuTriggerFor]="userMenu">
       <img
@@ -17,7 +17,7 @@
       {{ currentUser.displayName }}
     </button>
     <mat-menu #userMenu="matMenu">
-      <button mat-menu-item (click)="authService.signOut()">
+      <button mat-menu-item (click)="onSignOut()">
         Sign Out
       </button>
     </mat-menu>
@@ -35,7 +35,6 @@
 </mat-toolbar>
 
 <!--loading overlay-->
+  <!--[show]="appService.isLoading$ | async"-->
 <mt-loading
-  [show]="appService.isLoading$ | async"
-  [mode]="appService.loadingType$ | async"
 ></mt-loading>

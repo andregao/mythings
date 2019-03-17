@@ -5,9 +5,17 @@ import { Observable, Subscription } from 'rxjs';
 import { debounceTime, map, takeUntil, tap } from 'rxjs/operators';
 import { MatIconRegistry } from '@angular/material';
 import { DomSanitizer } from '@angular/platform-browser';
-import { AuthService } from '../core/auth.service';
-import { DataService } from '../core/data.service';
-import { AppService } from '../core/app.service';
+import { AuthService } from '../../core/auth.service';
+import { DataService } from '../../core/data.service';
+import { AppService } from '../../core/app.service';
+import * as fromAuth from '../reducers';
+import {
+  AuthPageActions,
+  AuthActions,
+  AuthApiActions,
+} from '../actions';
+import { select, Store } from '@ngrx/store';
+import { SignUpInfo } from '../../shared/models/user.model';
 
 // validator function to check password matching
 function passwordMatch(control: AbstractControl): ValidationErrors | null {
@@ -26,12 +34,14 @@ function passwordMatch(control: AbstractControl): ValidationErrors | null {
   templateUrl: './auth.component.html',
   styleUrls: ['./auth.component.scss']
 })
-export class AuthComponent implements OnInit {
+export class AuthComponent implements OnInit, OnDestroy {
   authType$: Observable<string>;
   signUpForm: FormGroup;
   signInForm: FormGroup;
   error: string; // to hold custom errors
-  userSub: Subscription;
+  error$ = this.store.pipe(select(fromAuth.getAuthPageError));
+
+  passwordControlSub: Subscription;
 
   constructor(
     private route: ActivatedRoute,
@@ -40,6 +50,7 @@ export class AuthComponent implements OnInit {
     private authService: AuthService,
     private dataService: DataService,
     private appService: AppService,
+    private store: Store<fromAuth.State>,
     private iconRegistry: MatIconRegistry,
     private sanitizer: DomSanitizer,
   ) {
@@ -48,7 +59,7 @@ export class AuthComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.appService.setTitle('');
+    // this.appService.setTitle('');
     this.authType$ = this.route.url.pipe(
       map(url => url[0].path),
       tap(path => path === 'signin' ?
@@ -58,21 +69,10 @@ export class AuthComponent implements OnInit {
     );
     this.buildForms();
 
-    // monitor user login status until route change
-    this.authService.currentUser$.pipe(
-      takeUntil(this.router.events),
-    ).subscribe(user => {
-      // console.log('auth service emits user info to auth comp');
-      if (user) {
-        // console.log('auth comp received user, navigating home');
-        this.router.navigateByUrl('/home');
-      }
-    });
-
     // monitor and debounce password match validation
     const passwordGroupControl = this.signUpForm.get('passwordGroup');
     const confirmPasswordControl = this.signUpForm.get('passwordGroup.confirmPassword');
-    confirmPasswordControl.valueChanges.pipe(
+    this.passwordControlSub = confirmPasswordControl.valueChanges.pipe(
       tap(() => this.error = ''),
       debounceTime(700),
     ).subscribe(() => {
@@ -80,6 +80,10 @@ export class AuthComponent implements OnInit {
         this.error = 'Passwords do not match';
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.passwordControlSub.unsubscribe();
   }
 
   buildForms() {
@@ -101,24 +105,34 @@ export class AuthComponent implements OnInit {
 
 
   onSignIn() {
-    this.appService.startLoading();
-    this.error = '';
-    const {email, password} = this.signInForm.value;
-    this.authService.signInWithEmail(email, password)
-      .catch(error => {
-        this.appService.stopLoading();
-        switch (error.code) {
-          case 'auth/wrong-password':
-            return this.error = 'Wrong password';
-          case 'auth/user-not-found':
-            return this.error = 'User does not exist';
-          case 'auth/invalid-email':
-            return this.error = 'Invalid email address';
-        }
-      });
+    this.store.dispatch(new AuthPageActions.SignIn(this.signInForm.value));
+
+    /*
+        const {email, password} = this.signInForm.value;
+        this.appService.startLoading();
+        this.error = '';
+        this.authService.signInWithEmail(email, password)
+          .then(user => console.log('signInWithEmailAndPassword promise fulfilled:', user))
+          .catch(error => {
+            this.appService.stopLoading();
+            switch (error.code) {
+              case 'auth/wrong-password':
+                return this.error = 'Wrong password';
+              case 'auth/user-not-found':
+                return this.error = 'User does not exist';
+              case 'auth/invalid-email':
+                return this.error = 'Invalid email address';
+            }
+          });
+    */
   }
 
   onSignUp() {
+    const {firstName, lastName, email, passwordGroup: {confirmPassword: password}} = this.signUpForm.value;
+    const signUpInfo: SignUpInfo = {email, password, firstName, lastName};
+    this.store.dispatch(new AuthPageActions.SignUp(signUpInfo));
+
+    /*
     this.appService.startLoading();
     this.error = '';
     const {firstName, lastName, email, passwordGroup: {confirmPassword}} = this.signUpForm.value;
@@ -134,9 +148,12 @@ export class AuthComponent implements OnInit {
             return this.error = 'Password is too simple';
         }
       });
+    */
   }
 
   onUseGoogle() {
+    this.store.dispatch(new AuthPageActions.GoogleSignIn());
+    /*
     this.appService.startLoading();
     this.authService.signInWithGoogle()
       .catch(error => {
@@ -148,5 +165,6 @@ export class AuthComponent implements OnInit {
             return this.error = 'Pop up window closed without signing in';
         }
       });
+    */
   }
 }

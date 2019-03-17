@@ -1,7 +1,7 @@
 <div
   fxLayout="column"
   fxLayoutAlign="start center"
-  *ngIf="content; else loading"
+  *ngIf="content$|async as content; else loading"
 >
   <h1>{{ content.mainHeading }}</h1>
   <h2 class="subtitle">{{ content.subHeading }}</h2>
