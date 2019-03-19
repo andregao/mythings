@@ -11,7 +11,7 @@ export interface State extends fromRoot.State {
 const selectAuthState = createFeatureSelector<State, fromAuth.State>('auth');
 
 export const getUser = createSelector(selectAuthState, fromAuth.getUser);
-export const getSignedIn = createSelector(getUser, user => !!user);
+export const isSignedIn = createSelector(getUser, user => !!user);
 export const getProjectIds = createSelector(getUser, user => user ? user.projectIds : null);
 
 export const getAuthPageError = createSelector(selectAuthState, fromAuth.getError);

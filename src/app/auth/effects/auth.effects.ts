@@ -72,13 +72,6 @@ export class AuthEffects {
   );
 
   @Effect({dispatch: false})
-  getUserDataSuccess$ = this.actions$.pipe(
-    ofType(AuthActions.AuthActionTypes.GetUserDataSuccess),
-    map((action: AuthActions.GetUserDataSuccess) => action),
-    tap(() => this.appService.navigate('/home')),
-  );
-
-  @Effect({dispatch: false})
   updateUserData$ = this.actions$.pipe(
     ofType(AuthActions.AuthActionTypes.UpdateUserData),
     map((action: AuthActions.UpdateUserData) => action.payload),

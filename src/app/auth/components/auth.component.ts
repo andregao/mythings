@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { Observable, Subscription } from 'rxjs';
-import { debounceTime, map, tap } from 'rxjs/operators';
+import { debounceTime, filter, map, tap } from 'rxjs/operators';
 import { MatIconRegistry } from '@angular/material';
 import { DomSanitizer } from '@angular/platform-browser';
 import { AuthService } from '../../core/auth.service';
@@ -33,6 +33,7 @@ function passwordMatch(control: AbstractControl): ValidationErrors | null {
 })
 export class AuthComponent implements OnInit, OnDestroy {
   authType$: Observable<string>;
+  userSub: Subscription;
   signUpForm: FormGroup;
   signInForm: FormGroup;
   error: string; // to hold custom errors
@@ -56,6 +57,13 @@ export class AuthComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // redirect when signed in
+    this.userSub = this.store.pipe(
+      select(fromAuth.isSignedIn),
+      filter(signedIn => signedIn),
+      tap(signedIn => this.appService.navigate('/home')),
+    ).subscribe();
+
     this.authType$ = this.route.url.pipe(
       map(url => url[0].path),
       tap(path => path === 'signin' ?
@@ -80,6 +88,7 @@ export class AuthComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.passwordControlSub.unsubscribe();
+    this.userSub.unsubscribe();
   }
 
   buildForms() {

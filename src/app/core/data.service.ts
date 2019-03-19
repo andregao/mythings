@@ -2,20 +2,17 @@ import { environment } from '../../environments/environment';
 import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from '@angular/fire/firestore';
 import { firestore } from 'firebase/app';
 import { take } from 'rxjs/operators';
-import { combineLatest, from, Observable, Subscription } from 'rxjs';
+import { from, Observable, Subscription } from 'rxjs';
 import { Injectable, OnDestroy } from '@angular/core';
 import { UserDoc } from '../shared/models/user.model';
 import { Todo } from '../shared/models/todo.model';
 import { Project } from '../shared/models/project.model';
 import { Heading } from '../shared/models/heading.model';
 import { Checklist } from '../shared/models/checklist.model';
-import { AppService } from './app.service';
-import { select, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { State } from './reducers';
 import { AuthActions } from '../auth/actions';
-import * as fromHome from '../home/reducers';
-import * as fromAuth from '../auth/reducers';
-import { DataActions, ProjectActions, TodoActions } from '../home/actions';
+import { ProjectActions, TodoActions } from '../home/actions';
 import WhereFilterOp = firebase.firestore.WhereFilterOp;
 
 @Injectable({
@@ -106,7 +103,7 @@ export class DataService implements OnDestroy {
 
   async initializeNewUser(user: UserDoc) {
     user.projectIds = [];
-    user.signUpDate = this.getTime();
+    user.signUpDate = this.getCurrentTime();
     this.setCurrentUserDoc(user.id);
     const batch = this.afs.firestore.batch();
     batch.set(this.userDoc.ref, user);
@@ -118,14 +115,13 @@ export class DataService implements OnDestroy {
     this.store.dispatch(new AuthActions.GetUserDataSuccess(userData.data() as UserDoc));
   }
 
-  // Static content
   getWelcomeContent() {
     return this.afs.doc('static/welcome').valueChanges().pipe(
       take(1),
     );
   }
 
-  private getTime() {
+  private getCurrentTime() {
     const time = new Date();
     return `${time.toDateString()} ${time.toLocaleTimeString()}`;
   }
@@ -133,7 +129,6 @@ export class DataService implements OnDestroy {
   /*
   Todos CRUD
   */
-
   getAllTodos() {
     return this.todosCol.valueChanges();
   }
@@ -141,7 +136,7 @@ export class DataService implements OnDestroy {
   createTodo(todo: Todo): Observable<void> {
     const todoId = this.afs.createId();
     todo.id = todoId;
-    todo.creationDate = this.getTime();
+    todo.creationDate = this.getCurrentTime();
 
     const batch = this.afs.firestore.batch();
     batch.set(this.todosCol.doc(todoId).ref, todo);
@@ -153,7 +148,7 @@ export class DataService implements OnDestroy {
 
   updateTodo(todo: Todo): Promise<void> {
     if (todo.completed) {
-      todo.completionDate = this.getTime();
+      todo.completionDate = this.getCurrentTime();
     }
     return this.todosCol.doc(todo.id).update(todo);
   }
@@ -195,7 +190,7 @@ export class DataService implements OnDestroy {
 
   updateProject(project: Project): Promise<void> {
     if (project.completed) {
-      project.completionDate = this.getTime();
+      project.completionDate = this.getCurrentTime();
     }
     return this.projectsCol.doc(project.id).update(project);
   }
@@ -203,7 +198,7 @@ export class DataService implements OnDestroy {
   createProject(project: Project): Promise<string> {
     const projectId = this.afs.createId();
     project.id = projectId;
-    project.creationDate = this.getTime();
+    project.creationDate = this.getCurrentTime();
     // create a batch to add project AND update user's projectIds array
     const batch = this.afs.firestore.batch();
     batch.set(this.projectsCol.doc(projectId).ref, project);

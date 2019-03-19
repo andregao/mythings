@@ -14,7 +14,7 @@ import { TitleActions } from '../../../core/actions';
 })
 export class WelcomeComponent implements OnInit {
 
-  isSignedIn$ = this.store.pipe(select(fromAuth.getSignedIn));
+  isSignedIn$ = this.store.pipe(select(fromAuth.isSignedIn));
   content$ = this.store.pipe(select(fromWelcome.getWelcomeContent));
 
   constructor(

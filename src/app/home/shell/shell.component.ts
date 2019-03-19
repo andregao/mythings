@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/
 import { combineLatest, of, Subscription } from 'rxjs';
 import { Todo } from '../../shared/models/todo.model';
 import { Project } from '../../shared/models/project.model';
-import { bufferCount, map, skip, take, tap, withLatestFrom } from 'rxjs/operators';
+import { map, skip, take, tap, withLatestFrom } from 'rxjs/operators';
 import { select, Store } from '@ngrx/store';
 import * as fromHome from '../../home/reducers';
 import * as fromAuth from '../../auth/reducers';

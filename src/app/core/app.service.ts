@@ -11,12 +11,6 @@ import { tap } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class AppService implements OnDestroy {
-  private isLoading = new BehaviorSubject<boolean>(true);
-  isLoading$ = this.isLoading.asObservable();
-
-  private loadingType = new BehaviorSubject<string>('indeterminate');
-  loadingType$ = this.loadingType.asObservable();
-
   titleSub: Subscription;
 
   constructor(
@@ -41,17 +35,6 @@ export class AppService implements OnDestroy {
 
   navigate(route: string) {
     this.ngZone.run(() => this.router.navigateByUrl(route)).then();
-  }
-
-  startLoading(type: string = 'indeterminate') {
-    // console.log('loader starts');
-    this.loadingType.next(type);
-    this.isLoading.next(true);
-  }
-
-  stopLoading() {
-    // console.log('loading ends');
-    this.isLoading.next(false);
   }
 
 }

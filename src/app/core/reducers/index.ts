@@ -1,8 +1,7 @@
 import * as fromLoader from './loader.reducer';
 import * as fromTitle from './title.reducer';
-import { ActionReducer, ActionReducerMap, createFeatureSelector, createSelector, MetaReducer } from '@ngrx/store';
+import { ActionReducerMap, createFeatureSelector, createSelector, MetaReducer } from '@ngrx/store';
 import { LoaderEffects } from '../effects/loader.effects';
-import { AuthActions } from '../../auth/actions';
 
 export interface State {
   loader: fromLoader.State;
