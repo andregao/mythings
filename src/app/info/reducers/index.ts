@@ -1,5 +1,5 @@
 import * as fromWelcome from './welcome.reducer';
-import * as fromRoot from '../../app.state';
+import * as fromRoot from '../../core/reducers';
 import { ActionReducerMap, createFeatureSelector, createSelector } from '@ngrx/store';
 
 interface InfoState {

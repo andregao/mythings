@@ -7,6 +7,8 @@ import { AuthService } from '../../core/auth.service';
 import { DataService } from '../../core/data.service';
 import { Credentials, SignUpInfo } from '../../shared/models/user.model';
 import { AuthActions, AuthApiActions, AuthPageActions, } from '../actions';
+import { TodoActions, ProjectActions, DataActions } from '../../home/actions';
+import { StatusActions } from '../../home/actions';
 import { AppService } from '../../core/app.service';
 
 @Injectable()
@@ -25,17 +27,10 @@ export class AuthEffects {
     map(action => action.payload),
     switchMap(({email, password}: Credentials) =>
       this.authService.signInWithEmail(email, password).pipe(
-        map(signedIn => new AuthApiActions.SignInSuccess(signedIn.user.uid)),
+        map(signedIn => new AuthActions.GetUserData(signedIn.user.uid)),
         catchError(error => of(new AuthApiActions.SignInFailure(error.code))),
       ),
     ),
-  );
-
-  @Effect()
-  signInSuccess$ = this.actions$.pipe(
-    ofType(AuthApiActions.AuthApiActionTypes.SignInSuccess),
-    map((action: AuthApiActions.SignInSuccess) => action.payload),
-    map(id => new AuthActions.GetUserData(id)),
   );
 
   @Effect({dispatch: false})
@@ -95,7 +90,7 @@ export class AuthEffects {
     ofType(AuthPageActions.AuthPageActionTypes.SignUp),
     map((action: AuthPageActions.SignUp) => action.payload),
     exhaustMap((info: SignUpInfo) =>
-      from(this.authService.signUpWithEmail(info.email, info.password)).pipe(
+      this.authService.signUpWithEmail(info.email, info.password).pipe(
         map(signedUp => {
           const userData = {
             id: signedUp.user.uid,
@@ -112,13 +107,21 @@ export class AuthEffects {
   @Effect()
   signOut$ = this.actions$.pipe(
     ofType(AuthActions.AuthActionTypes.SignOut),
-    exhaustMap(() => from(this.authService.signOut())),
+    tap(() => this.appService.navigate('/')),
+    exhaustMap(() => {
+      this.dataService.stopSyncingData();
+      return from(this.authService.signOut());
+    }),
     map(() => new AuthActions.SignOutSuccess()),
   );
 
-  @Effect({dispatch: false})
+  @Effect()
   signOutSuccess$ = this.actions$.pipe(
     ofType(AuthActions.AuthActionTypes.SignOutSuccess),
-    tap(() => this.appService.navigate('/')),
+    switchMap(() => [
+      new ProjectActions.ClearProjects(),
+      new TodoActions.ClearTodos(),
+      new StatusActions.SetNeedData(true),
+    ]),
   );
 }

@@ -9,7 +9,7 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 })
 export class FiltersComponent implements OnInit, OnChanges {
   orderedProjects: Project[] = [];
-  @Input() projects: Project[];
+  @Input() activeProjects: Project[];
   @Input() projectIds: string[];
   @Input() currentFilter: string;
 
@@ -31,7 +31,7 @@ export class FiltersComponent implements OnInit, OnChanges {
       // console.log('no active projects in filters');
       this.orderedProjects = [];
     }
-    if (this.projectIds && this.projectIds.length && this.projects && this.projects.length) {
+    if (this.projectIds && this.projectIds.length && this.activeProjects && this.activeProjects.length) {
       this.sortProjects();
     }
   }
@@ -40,7 +40,7 @@ export class FiltersComponent implements OnInit, OnChanges {
     // console.log('sorting projects');
     const orderedProjects = [];
     this.projectIds.forEach(id => {
-      const project = this.projects.find(p => p.id === id);
+      const project = this.activeProjects.find(p => p.id === id);
       if (project) {
         orderedProjects.push(project);
       }

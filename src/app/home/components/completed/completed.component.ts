@@ -34,41 +34,56 @@ export class CompletedComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // console.log('Completed Component', changes);
+    console.log('Completed Component', changes);
 
     // update todoItems table when data changes
     if (changes.completedTodos && changes.completedTodos.currentValue) {
-      this.todoTableData = new MatTableDataSource<Todo>(this.completedTodos);
-      // customize filter logic
-      this.todoTableData.filterPredicate = this.todoFilter(this.projectMap);
-      // customize sorting logic
-      this.todoTableData.sortingDataAccessor = this.sortIncludeDate;
-      // assign paginator and sorter asynchronously
-      setTimeout(() => {
-        this.todoTableData.paginator = this.paginator.first;
-        this.todoTableData.sort = this.sort.first;
-      });
+      this.updateTodosTable();
     }
+
     // update project table when data changes
     if (changes.completedProjects && changes.completedProjects.currentValue) {
-      // console.log('projects data changed');
-      this.projectTableData = new MatTableDataSource<Project>(this.completedProjects);
-      // customize sorting logic
-      this.projectTableData.sortingDataAccessor = this.sortIncludeDate;
-      setTimeout(() => {
-        this.projectTableData.paginator = this.paginator.last;
-        this.projectTableData.sort = this.sort.last;
-      });
+      this.updateProjectsTable();
     }
 
     // update project map when all projects change
     if (changes.allProjects && changes.allProjects.currentValue) {
-      const newProjectMap = {};
-      this.allProjects.forEach(project => {
-        newProjectMap[project.id] = project.title;
-      });
-      this.projectMap = {...newProjectMap};
+      this.updateProjectsMap();
     }
+  }
+
+  updateTodosTable() {
+    this.todoTableData = new MatTableDataSource<Todo>(this.completedTodos);
+    // customize filter logic
+    this.todoTableData.filterPredicate = this.todoFilter(this.projectMap);
+    // customize sorting logic
+    this.todoTableData.sortingDataAccessor = this.sortIncludeDate;
+    // assign paginator and sorter asynchronously
+    setTimeout(() => {
+      this.todoTableData.paginator = this.paginator.first;
+      this.todoTableData.sort = this.sort.first;
+    });
+  }
+
+  updateProjectsTable() {
+    // console.log('projects data changed');
+    this.projectTableData = new MatTableDataSource<Project>(this.completedProjects);
+    // customize sorting logic
+    this.projectTableData.sortingDataAccessor = this.sortIncludeDate;
+    setTimeout(() => {
+      this.projectTableData.paginator = this.paginator.last;
+      this.projectTableData.sort = this.sort.last;
+    });
+  }
+
+  updateProjectsMap() {
+    const newProjectMap = {};
+    this.allProjects.forEach(project => {
+      newProjectMap[project.id] = project.title;
+    });
+    this.projectMap = {...newProjectMap};
+    // recreate todoTable
+    this.updateTodosTable();
   }
 
   // transform date to integer to sort
@@ -90,7 +105,6 @@ export class CompletedComponent implements OnInit, OnChanges {
         data.completionDate.toLowerCase().includes(keyword);
     };
   }
-
 
   // todoItems
   searchTodoTable(keyword: string) {

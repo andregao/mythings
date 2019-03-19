@@ -12,6 +12,7 @@ import * as fromAuth from '../reducers';
 import { AuthPageActions, } from '../actions';
 import { select, Store } from '@ngrx/store';
 import { SignUpInfo } from '../../shared/models/user.model';
+import { TitleActions } from '../../core/actions';
 
 // validator function to check password matching
 function passwordMatch(control: AbstractControl): ValidationErrors | null {
@@ -55,12 +56,11 @@ export class AuthComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // this.appService.setTitle('');
     this.authType$ = this.route.url.pipe(
       map(url => url[0].path),
       tap(path => path === 'signin' ?
-        this.appService.setTitle('Sign In to MaThangs') :
-        this.appService.setTitle('Sign Up for MaThangs')
+        this.store.dispatch(new TitleActions.SetTitle('Sign In to MaThangs')) :
+        this.store.dispatch(new TitleActions.SetTitle('Sign Up for MaThangs'))
       )
     );
     this.buildForms();

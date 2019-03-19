@@ -4,7 +4,7 @@ import { auth } from 'firebase/app';
 import { BehaviorSubject, from, Observable, Subject, Subscription } from 'rxjs';
 import { UserDoc } from '../shared/models/user.model';
 import { filter, map, take, takeUntil, tap } from 'rxjs/operators';
-import { AuthApiActions } from '../auth/actions';
+import { AuthApiActions, AuthActions } from '../auth/actions';
 import { Store } from '@ngrx/store';
 import * as fromAuth from '../auth/reducers';
 import UserCredential = firebase.auth.UserCredential;
@@ -23,7 +23,6 @@ export class AuthService implements OnDestroy {
     private afAuth: AngularFireAuth,
     private store: Store<fromAuth.State>,
   ) {
-    this.getRedirectResult();
     this.startMonitoringAuth();
   }
 
@@ -31,6 +30,7 @@ export class AuthService implements OnDestroy {
     this.userSub.unsubscribe();
   }
 
+  // for page refresh or signed in user came back, stops when manual auth
   startMonitoringAuth() {
     this.userSub = this.afAuth.user.pipe(
       takeUntil(this.stopMonitoring),
@@ -42,7 +42,6 @@ export class AuthService implements OnDestroy {
       filter(user => !!user),
       take(1),
       map(user => {
-        // console.log('user detected');
         if (user.providerData && user.providerData[0].providerId === 'google.com') {
           // console.log('google user');
           const userData = {
@@ -55,15 +54,13 @@ export class AuthService implements OnDestroy {
         }
         if (user.providerData && user.providerData[0].providerId === 'password') {
           // console.log('email user');
-          this.store.dispatch(new AuthApiActions.SignInSuccess(user.uid));
+          this.store.dispatch(new AuthActions.GetUserData(user.uid));
         }
-        this.stopMonitoringAuth();
       })
     ).subscribe();
   }
 
   stopMonitoringAuth() {
-    console.log('stop monitoring auth');
     this.stopMonitoring.next();
   }
 
@@ -73,42 +70,14 @@ export class AuthService implements OnDestroy {
     // this.getRedirectResult();
   }
 
-  getRedirectResult() {
-    this.afAuth.auth.getRedirectResult()
-      .then((user: UserCredential) => {
-        if (user.user) {
-          this.stopMonitoringAuth();
-          console.log('google redirect signed in');
-          const userData = {
-            id: user.user.uid,
-            email: user.user.email,
-            displayName: user.user.displayName,
-            photoURL: user.user.photoURL,
-          };
-          this.store.dispatch(new AuthApiActions.GoogleSignInSuccess(userData));
-        }
-      });
-  }
-
   signInWithEmail(email: string, password: string) {
+    this.stopMonitoringAuth();
     return from(this.afAuth.auth.signInWithEmailAndPassword(email, password));
   }
 
   signUpWithEmail(email: string, password: string) {
     this.stopMonitoringAuth();
-    return this.afAuth.auth.createUserWithEmailAndPassword(email, password);
-  }
-
-  checkSignedIn() {
-    // check once to see if user already signed in
-    this.afAuth.user.pipe(
-      take(1),
-      map(user => {
-        if (user && user.providerData && user.providerData[0].providerId === 'password') {
-          this.store.dispatch(new AuthApiActions.SignInSuccess(user.uid));
-        }
-      })
-    );
+    return from(this.afAuth.auth.createUserWithEmailAndPassword(email, password));
   }
 
   signOut() {

@@ -4,6 +4,7 @@ import { Todo } from '../../../shared/models/todo.model';
 import { Project } from '../../../shared/models/project.model';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { AppService } from '../../../core/app.service';
+import { currentProjectId } from '../../reducers';
 
 @Component({
   selector: 'mt-lists',
@@ -23,13 +24,13 @@ export class ListsComponent implements OnInit, OnChanges {
   @Input() todoIds: string[];
   @Output() todoCheckboxChange = new EventEmitter();
   @Output() addTodo = new EventEmitter<Todo>();
-  @Output() editTodo = new EventEmitter<Todo>();
-  @Output() deleteTodo = new EventEmitter<string>();
-  @Output() reorderTodos = new EventEmitter<string[]>();
+  @Output() editTodo = new EventEmitter<{todo: Todo, fromProject: string}>();
+  @Output() deleteTodo = new EventEmitter<Todo>();
+  @Output() reorderTodos = new EventEmitter<{todoIds: string[], projectId: string}>();
   @Output() updateProjectInfo = new EventEmitter<Project>();
-  @Output() deleteProject = new EventEmitter<void>();
+  @Output() deleteProject = new EventEmitter<string>();
 
-  constructor(private appService: AppService) {
+  constructor() {
   }
 
   ngOnInit() {
@@ -48,7 +49,6 @@ export class ListsComponent implements OnInit, OnChanges {
 
     if (changes.todoIds || changes.todos) {
       if (changes.todoIds && changes.todoIds.currentValue || changes.todos && changes.todos.currentValue) {
-        this.appService.stopLoading();
       }
       // sort todoItems only when both items and their order are present
       if (this.todoIds && this.todoIds.length && this.todos && this.todos.length) {
@@ -56,17 +56,14 @@ export class ListsComponent implements OnInit, OnChanges {
       }
     }
 
-
   }
 
   clearListsDisplay(): void {
-    // console.log('clearing lists display');
     this.completedTodos = [];
     this.activeTodos = [];
   }
 
   clearTodoList(): void {
-    // console.log('clearing todo list and order');
     this.todos = [];
     this.todoIds = [];
   }
@@ -74,7 +71,7 @@ export class ListsComponent implements OnInit, OnChanges {
   // todoItems
   sortTodos() {
     this.clearListsDisplay();
-    // console.log('sorting todos');
+    console.log('sorting todos');
     const activeTodos = [];
     const completedTodos = [];
     this.todoIds.forEach(id => {
@@ -85,17 +82,10 @@ export class ListsComponent implements OnInit, OnChanges {
         completedTodos.unshift(todo);
       }
     });
-    // sort the most recent first
-    // if (completedTodos.length > 1) {
-    //   completedTodos.sort((a, b) => {
-    //     return b.completionDate.seconds - a.completionDate.seconds;
-    //   });
-    // }
 
     // limit the number of items
     this.activeTodos = activeTodos;
     this.completedTodos = completedTodos.slice(0, 20);
-    this.appService.stopLoading();
   }
 
   onTodoCheckboxChange(id: string, change: MatCheckboxChange) {
@@ -113,32 +103,27 @@ export class ListsComponent implements OnInit, OnChanges {
 
   onEditTodo(todo: Todo) {
     this.expansionControl[todo.id] = false; // closes the expansion panel
-    this.editTodo.emit(todo);
+    this.editTodo.emit({todo, fromProject: this.currentProject.id});
   }
 
-  onDeleteTodo(id: string) {
-    this.deleteTodo.emit(id);
+  onDeleteTodo(todo: Todo) {
+    this.deleteTodo.emit(todo);
   }
 
   onTodoDrop(event: CdkDragDrop<Todo[]>) {
     if (event.previousIndex !== event.currentIndex) {
       moveItemInArray(this.activeTodos, event.previousIndex, event.currentIndex);
-      this.reorderTodos.emit(this.reorderTodoIds());
+      const newTodoIds: string[] = [];
+      this.activeTodos.forEach(todo => newTodoIds.push(todo.id));
+      if (this.completedTodos && this.completedTodos.length) {
+        this.completedTodos.forEach(todo => newTodoIds.push(todo.id));
+      }
+      this.reorderTodos.emit({todoIds: newTodoIds, projectId: this.currentProject.id});
     }
-  }
-
-  reorderTodoIds(): string[] {
-    const newTodoIds: string[] = [];
-    this.activeTodos.forEach(todo => newTodoIds.push(todo.id));
-    if (this.completedTodos && this.completedTodos.length) {
-      this.completedTodos.forEach(todo => newTodoIds.push(todo.id));
-    }
-    return newTodoIds;
   }
 
   // Projects
   onSaveProjectInfo() {
-    this.appService.startLoading();
     const projectInfo: Project = {};
     projectInfo.id = this.currentProject.id;
     projectInfo.title = this.currentProject.title;
@@ -149,7 +134,7 @@ export class ListsComponent implements OnInit, OnChanges {
 
   onDeleteProject() {
     if (confirm('This will delete the project and all its associated items')) {
-      this.deleteProject.emit();
+      this.deleteProject.emit(this.currentProject.id);
     }
   }
 }

@@ -1,40 +1,45 @@
 <div
   fxLayout="row"
   fxLayoutGap="10px"
-  *ngIf="(authService.currentUser$ | async)"
 >
   <div class="filters" fxFlex="none">
     <mt-filters
-      [currentFilter]="currentProjectId"
-      [projects]="activeProjects"
+      [currentFilter]="currentProjectId$ | async"
+      [activeProjects]="activeProjects$ | async"
       [projectIds]="projectIds$ | async"
       (setFilter)="onSetFilter($event)"
       (addProject)="onAddProject()"
       (reorderProjects)="reorderProjects($event)"
     ></mt-filters>
   </div>
-  <div class="lists" fxFlex="flex" *ngIf="!showCompleted">
+  <div
+    class="lists"
+    fxFlex="flex"
+    *ngIf="!(showCompleted$ | async); else completed"
+  >
     <mt-lists
       [currentProject]="currentProject$ | async"
-      [activeProjects]="activeProjects"
+      [activeProjects]="activeProjects$ | async"
       [todos]="todos$ | async"
       [todoIds]="todoIds$ | async"
-      (todoCheckboxChange)="changeTodoStatus($event)"
+      (todoCheckboxChange)="toggleTodoStatus($event)"
       (addTodo)="onAddTodo($event)"
       (editTodo)="onEditTodo($event)"
       (deleteTodo)="onDeleteTodo($event)"
       (reorderTodos)="onReorderTodos($event)"
-      (updateProjectInfo)="onUpdateProjectInfo($event)"
-      (deleteProject)="onDeleteProject()"
+      (updateProjectInfo)="onUpdateProject($event)"
+      (deleteProject)="onDeleteProject($event)"
     ></mt-lists>
   </div>
-  <div class="completed" fxFlex="flex" *ngIf="showCompleted">
-    <mt-completed
-      [completedProjects]="completedProjects"
-      [allProjects]="allProjects"
-      [completedTodos]="completedTodos$ | async"
-      (setFilter)="onSetFilter($event)"
-      (changeTodoStatus)="changeTodoStatus($event)"
-    ></mt-completed>
-  </div>
+  <ng-template #completed>
+    <div class="completed" fxFlex="flex">
+      <mt-completed
+        [completedProjects]="completedProjects$ | async"
+        [allProjects]="allProjects$ | async"
+        [completedTodos]="completedTodos$ | async"
+        (setFilter)="onSetFilter($event)"
+        (changeTodoStatus)="toggleTodoStatus($event)"
+      ></mt-completed>
+    </div>
+  </ng-template>
 </div>

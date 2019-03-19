@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { select, Store } from '@ngrx/store';
-import * as fromRoot from '../../../app.state';
+import * as fromRoot from '../../../core/reducers';
 
 @Component({
   selector: 'mt-loading',

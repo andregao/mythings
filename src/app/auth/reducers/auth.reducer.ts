@@ -1,5 +1,6 @@
 import { UserDoc } from '../../shared/models/user.model';
 import { AuthActions, AuthApiActions, AuthPageActions } from '../actions';
+import { DataActions } from '../../home/actions';
 
 
 export interface State {
@@ -14,7 +15,10 @@ const initialState: State = {
 
 export function reducer(
   state = initialState,
-  action: AuthApiActions.AuthApiActionsUnion | AuthActions.AuthActionsUnion | AuthPageActions.AuthPageActionsUnion
+  action: AuthApiActions.AuthApiActionsUnion
+    | AuthActions.AuthActionsUnion
+    | AuthPageActions.AuthPageActionsUnion
+    | DataActions.DataActionsUnion
 ): State {
   switch (action.type) {
 
@@ -58,9 +62,18 @@ export function reducer(
         error: getErrorMessage(action.payload),
       };
     }
+
+    case AuthActions.AuthActionTypes.SyncProjectIds: {
+      return {
+        ...state,
+        user: action.payload,
+      };
+    }
+
     case AuthActions.AuthActionTypes.SignOutSuccess: {
       return initialState;
     }
+
     default: {
       return state;
     }
@@ -71,7 +84,6 @@ export const getUser = (state: State) => state.user;
 export const getError = (state: State) => state.error;
 
 function getErrorMessage(error): string {
-  console.log('got error code:', error);
   switch (error) {
     // sign in errors
     case 'auth/wrong-password':

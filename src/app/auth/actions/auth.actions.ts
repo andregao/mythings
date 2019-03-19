@@ -8,6 +8,7 @@ export enum AuthActionTypes {
   GetUserDataSuccess = '[Auth] Get User Data Success',
   UpdateUserData = '[Auth] Update User Data',
   UpdateUserDataSuccess = '[Auth] Update User Data Success',
+  SyncProjectIds = '[Auth] Sync Project IDs',
   SignOut = '[Auth] Sign Out',
   SignOutSuccess = '[Auth] Sign Out Success',
 }
@@ -54,6 +55,13 @@ export class UpdateUserDataSuccess implements Action {
   }
 }
 
+export class SyncProjectIds implements Action {
+  readonly type = AuthActionTypes.SyncProjectIds;
+
+  constructor(public payload: UserDoc) {
+  }
+}
+
 export class SignOut implements Action {
   readonly type = AuthActionTypes.SignOut;
 }
@@ -70,5 +78,6 @@ export type AuthActionsUnion =
   | GetUserDataSuccess
   | UpdateUserData
   | UpdateUserDataSuccess
+  | SyncProjectIds
   | SignOut
   | SignOutSuccess;

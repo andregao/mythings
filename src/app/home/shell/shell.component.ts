@@ -1,11 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { Observable, of, Subscription } from 'rxjs';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
+import { combineLatest, of, Subscription } from 'rxjs';
 import { Todo } from '../../shared/models/todo.model';
-import { DataService } from '../../core/data.service';
 import { Project } from '../../shared/models/project.model';
-import { take, tap } from 'rxjs/operators';
-import { AuthService } from '../../core/auth.service';
-import { AppService } from '../../core/app.service';
+import { bufferCount, map, skip, take, tap, withLatestFrom } from 'rxjs/operators';
+import { select, Store } from '@ngrx/store';
+import * as fromHome from '../../home/reducers';
+import * as fromAuth from '../../auth/reducers';
+import * as fromRoot from '../../core/reducers';
+import { TitleActions } from '../../core/actions';
+import { DataActions, ProjectActions, StatusActions, TodoActions } from '../actions';
 
 
 @Component({
@@ -13,182 +16,132 @@ import { AppService } from '../../core/app.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ShellComponent implements OnInit, OnDestroy {
+  dataStatusSub: Subscription;
 
   // whether to show the completed component
-  showCompleted: boolean;
-
-  projectsSub: Subscription;
-  todosSub: Subscription;
+  showCompleted$ = this.store.pipe(
+    select(fromHome.currentProjectId),
+    map(id => id === 'completed'),
+  );
 
   // used in filters component
-  currentProjectId: string;
-  activeProjects: Project[];
-  projectIds$: Observable<string[]>;
+  currentProjectId$ = this.store.pipe(select(fromHome.currentProjectId));
+  activeProjects$ = this.store.pipe(select(fromHome.activeProjects));
+  projectIds$ = this.store.pipe(select(fromAuth.getProjectIds));
 
   // used in lists component
-  currentProject$: Observable<Project>;
-  todos$: Observable<Todo[]>;
-  todoIds$: Observable<string[]>;
+  currentProject$ = this.store.pipe(select(fromHome.currentProject));
+  todos$ = this.store.pipe(select(fromHome.allTodos));
+  todoIds$ = this.store.pipe(select(fromHome.todoIds));
 
   // used in completed component
-  allProjects: Project[];
-  completedProjects: Project[];
-  completedTodos$: Observable<Todo[]>;
+  allProjects$ = this.store.pipe(select(fromHome.allProjects));
+  completedProjects$ = this.store.pipe(select(fromHome.completedProjects));
+  completedTodos$ = this.store.pipe(select(fromHome.completedTodos));
 
   constructor(
-    public authService: AuthService,
-    private dataService: DataService,
-    private appService: AppService,
-    private ref: ChangeDetectorRef,
+    private store: Store<fromRoot.State>,
   ) {
   }
 
   ngOnInit() {
-    this.appService.setTitle('Home');
-    this.showCompleted = false;
-    this.authService.currentUser$.pipe(take(1)).subscribe(userData => {
-      if (userData) {
-        this.initializePage('inbox');
+    this.store.dispatch(new TitleActions.SetTitle('Home'));
+    this.dataStatusSub = this.store.pipe(
+      select(fromHome.needData),
+    ).subscribe(needData => {
+      if (needData) {
+        this.store.dispatch(new DataActions.StartSyncingData());
+        this.store.dispatch(new StatusActions.SetNeedData(false));
+        this.checkInitialSync();
       }
     });
-
-    // subscribe to all projects and divide them to active and completed
-    this.projectsSub = this.dataService.getAllProjects().pipe(
-      tap(projects => {
-        // convert firestore date type to readable format and
-        // sort projects to active and completed
-        this.allProjects = [];
-        const activeProjects = [];
-        const completedProjects = [];
-        projects.forEach(project => {
-            if (project.completed && project.completionDate) {
-              project.completionDate = project.completionDate.toDate().toDateString();
-              completedProjects.push(project);
-            } else {
-              activeProjects.push(project);
-            }
-          }
-        );
-        // if (completedProjects.length > 1) {
-        //   completedProjects.sort((a, b) => b.completionDate.seconds - a.completionDate.seconds);
-        // }
-        this.completedProjects = completedProjects;
-        this.activeProjects = activeProjects;
-        this.allProjects = projects;
-      }),
-    ).subscribe();
-
-
   }
 
   ngOnDestroy(): void {
-    this.projectsSub.unsubscribe();
+    this.dataStatusSub.unsubscribe();
   }
 
-  initializePage(projectId: string) {
-    this.appService.startLoading();
-    this.currentProjectId = projectId;
-    this.projectIds$ = this.dataService.getProjectIds();
-    this.currentProject$ = this.dataService.getProject(projectId);
-    if (projectId !== 'new') {
-      this.todos$ = this.dataService.getTodos('project', '==', projectId);
-      this.todoIds$ = this.dataService.getTodoIds(projectId);
-    } else {
-      this.todos$ = this.todoIds$ = of([]);
-    }
-    this.ref.markForCheck();
-  }
-
-  initializeCompleted() {
-    this.appService.startLoading();
-    // this.completedProjects$ = this.dataService.getProjects('completed', '==', true);
-    this.projectIds$ = this.dataService.getProjectIds();
-    this.completedTodos$ = this.dataService.getTodos('completed', '==', true)
-      .pipe(
-        tap(todos => {
-          todos.forEach(todo =>
-            todo.completionDate = todo.completionDate.toDate().toDateString()
-          );
-          this.appService.stopLoading();
-        })
-      );
+  checkInitialSync() {
+    combineLatest(
+      this.store.pipe(select(fromHome.allProjects), skip(1)),
+      this.store.pipe(select(fromHome.allTodos), skip(1)),
+      this.store.pipe(select(fromAuth.getProjectIds), skip(1)),
+    ).pipe(take(1))
+      .subscribe(() => this.store.dispatch(new DataActions.InitialSyncSuccess()));
   }
 
   onSetFilter(projectId: string) {
-    // console.log('setting filter', projectId);
-    if (projectId !== 'completed') {
-      this.showCompleted = false;
-      this.initializePage(projectId);
-    } else {
-      this.showCompleted = true;
-      this.currentProjectId = projectId; // mark active style on filters component
-      this.initializeCompleted();
+    this.store.dispatch(new StatusActions.SetCurrentProject(projectId));
+  }
+
+  /*
+    Todos
+  */
+  onAddTodo(todoInput: Todo) {
+    of(todoInput).pipe(
+      withLatestFrom(this.store.pipe(select(fromHome.currentProjectId))),
+      map(([todo, projectId]) => {
+        todo.project = projectId;
+        return todo;
+      }),
+      take(1),
+      tap(todo => this.store.dispatch(new TodoActions.AddTodo(todo)))
+    ).subscribe();
+  }
+
+  toggleTodoStatus(todo) {
+    this.store.dispatch(new TodoActions.ToggleTodoStatus(todo));
+  }
+
+  onEditTodo({todo, fromProject}) {
+    this.store.dispatch(new TodoActions.UpdateTodo(todo));
+    if (todo.project !== fromProject) {
+      this.store.dispatch(new TodoActions.MoveTodo({todo, fromProject}));
     }
   }
 
-  // handling TodoItems
-  changeTodoStatus({id, completed}) {
-    this.dataService.updateTodo(id, {completed})
-      .then(() => console.log('db: todo updated'));
+  onDeleteTodo(todo: Todo) {
+    this.store.dispatch(new TodoActions.DeleteTodo(todo));
   }
 
-
-  onAddTodo(todo: Todo) {
-    todo.project = this.currentProjectId;
-    this.dataService.createTodo(todo, this.currentProjectId)
-      .then(() => console.log('db: todo item created'));
+  onReorderTodos({todoIds, projectId}) {
+    this.store.dispatch(new TodoActions.ReorderTodos({todoIds, projectId}));
   }
 
-  onEditTodo(todo: Todo) {
-    this.dataService.updateTodo(todo.id, todo)
-      .then(() => console.log('db: todo updated'));
-    if (todo.project !== this.currentProjectId) {
-      this.dataService.moveTodo(todo.id, this.currentProjectId, todo.project)
-        .then(() => console.log('db: todoId moved'));
-    }
-  }
-
-  onDeleteTodo(id: string) {
-    this.dataService.deleteTodo(id, this.currentProjectId)
-      .then(() => console.log('db: todo deleted'));
-  }
-
-  onReorderTodos(todoIds: string[]) {
-    this.dataService.updateTodoIds(this.currentProjectId, todoIds)
-      .then(() => console.log('db: todoIds updated for', this.currentProjectId));
-  }
-
-  // handling active Projects
-  onUpdateProjectInfo(project: Project) {
+  /*
+  Projects
+ */
+  onUpdateProject(project: Project) {
     if (project.id === 'new') {
-      this.dataService.addProject(project)
-        .then(projectId => this.initializePage(projectId));
+      this.store.dispatch(new ProjectActions.AddProject(project));
     } else {
-      this.dataService.updateProject(project)
-        .then(() => this.appService.stopLoading());
+      this.store.dispatch(new ProjectActions.UpdateProject(project));
       if (project.completed) {
-        this.onSetFilter('inbox');
+        this.store.dispatch(new StatusActions.SetCurrentProject('inbox'));
       }
     }
   }
 
-  onDeleteProject() {
-    this.dataService.deleteProject(this.currentProjectId);
-    this.initializePage('inbox');
+  onDeleteProject(id: string) {
+    this.store.dispatch(new ProjectActions.DeleteProject(id));
+    this.store.dispatch(new StatusActions.SetCurrentProject('inbox'));
   }
 
   onAddProject() {
-    this.currentProject$ = of({id: 'new', title: '', completed: false, notes: ''});
-    this.onSetFilter('new');
+    this.store.dispatch(new StatusActions.SetCurrentProject('new'));
   }
 
-  reorderProjects(activeIds: string[]) {
-    let reorderedIds = [];
-    this.dataService.getProjectIds().pipe(take(1)).subscribe(ids => {
-      reorderedIds = ids.filter(id => !activeIds.includes(id));
-      reorderedIds = [...activeIds, ...reorderedIds];
-      this.dataService.updateProjectIds(reorderedIds)
-        .then(() => console.log('db: projects re-ordered'));
+  reorderProjects(activeProjectIds: string[]) {
+    let newProjectIds = [];
+    this.store.pipe(
+      select(fromAuth.getProjectIds),
+      take(1),
+    ).subscribe(ids => {
+      // find completed project ids first
+      newProjectIds = ids.filter(id => !activeProjectIds.includes(id));
+      // put active project ids in front
+      newProjectIds = [...activeProjectIds, ...newProjectIds];
+      this.store.dispatch(new ProjectActions.ReorderProjects(newProjectIds));
     });
   }
 

@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { AuthActions, AuthApiActions, AuthPageActions } from '../../auth/actions';
+import { DataActions, TodoActions } from '../../home/actions';
 import { Actions, Effect, ofType } from '@ngrx/effects';
 import { map } from 'rxjs/operators';
-import * as fromLoader from '../actions/loader.actions';
-import * as welcomeActions from '../../info/actions/welcome.actions';
+import { LoaderActions } from '../actions';
+import { WelcomeActions } from '../../info/actions';
 
 /*
 Map action events to each loading status,
@@ -23,7 +24,9 @@ const downloadActions = [
   AuthActions.AuthActionTypes.GetUserDataGoogleSignIn,
   AuthActions.AuthActionTypes.InitializeNewUser,
   // info
-  welcomeActions.WelcomeActionTypes.GetContent,
+  WelcomeActions.WelcomeActionTypes.GetContent,
+  // data
+  DataActions.DataActionTypes.StartSyncingData,
 ];
 
 const stopActions = [
@@ -33,9 +36,11 @@ const stopActions = [
   AuthApiActions.AuthApiActionTypes.NotSignedIn,
   AuthActions.AuthActionTypes.GetUserDataSuccess,
   // info
-  welcomeActions.WelcomeActionTypes.GetContentSuccess,
-  welcomeActions.WelcomeActionTypes.GetContentFailure,
-  welcomeActions.WelcomeActionTypes.GetContentSkpped,
+  WelcomeActions.WelcomeActionTypes.GetContentSuccess,
+  WelcomeActions.WelcomeActionTypes.GetContentFailure,
+  WelcomeActions.WelcomeActionTypes.GetContentSkpped,
+  // data
+  DataActions.DataActionTypes.InitialSyncSuccess,
 ];
 
 @Injectable()
@@ -46,18 +51,18 @@ export class LoaderEffects {
   @Effect()
   showUpload$ = this.actions$.pipe(
     ofType(...uploadActions),
-    map(() => new fromLoader.StartUpload())
+    map(() => new LoaderActions.StartUpload())
   );
 
   @Effect()
   showDownload$ = this.actions$.pipe(
     ofType(...downloadActions),
-    map(() => new fromLoader.StartDownload())
+    map(() => new LoaderActions.StartDownload())
   );
 
   @Effect()
   stopLoading$ = this.actions$.pipe(
     ofType(...stopActions),
-    map(() => new fromLoader.StopLoading())
+    map(() => new LoaderActions.StopLoading())
   );
 }

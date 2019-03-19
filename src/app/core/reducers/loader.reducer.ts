@@ -1,4 +1,4 @@
-import { LoaderActionTypes, LoaderActionUnion } from '../actions/loader.actions';
+import { LoaderActions } from '../actions';
 
 export interface State {
   isLoading: boolean;
@@ -12,24 +12,24 @@ const initialState: State = {
 
 export function reducer(
   state: State = initialState,
-  action: LoaderActionUnion
+  action: LoaderActions.LoaderActionUnion
 ): State {
   switch (action.type) {
-    case LoaderActionTypes.StartUpload: {
+    case LoaderActions.LoaderActionTypes.StartUpload: {
       return {
         ...state,
         isLoading: true,
         type: 'query',
       };
     }
-    case LoaderActionTypes.StartDownload: {
+    case LoaderActions.LoaderActionTypes.StartDownload: {
       return {
         ...state,
         isLoading: true,
         type: 'indeterminate',
       };
     }
-    case LoaderActionTypes.StopLoading: {
+    case LoaderActions.LoaderActionTypes.StopLoading: {
       return {
         ...state,
         isLoading: false,

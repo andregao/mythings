@@ -127,12 +127,6 @@
                   [(ngModel)]="todo.project"
                   name="todoProject"
                 >
-                  <mat-option value="inbox">
-                    Inbox
-                  </mat-option>
-                  <mat-option value="someday">
-                    Someday
-                  </mat-option>
                   <mat-option
                     *ngFor="let project of activeProjects"
                     [value]="project.id"
@@ -159,7 +153,7 @@
               >
                 Save
               </button>
-              <button mat-button (click)="onDeleteTodo(todo.id)">
+              <button mat-button (click)="onDeleteTodo(todo)">
                 <mat-icon aria-label="delete todo icon"
                   >delete_forever
                 </mat-icon>

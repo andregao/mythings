@@ -1,24 +1,27 @@
 import { environment } from '../../environments/environment';
 import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from '@angular/fire/firestore';
 import { firestore } from 'firebase/app';
-import { map, take, tap } from 'rxjs/operators';
-import { Observable, of } from 'rxjs';
-import { Injectable } from '@angular/core';
+import { take } from 'rxjs/operators';
+import { combineLatest, from, Observable, Subscription } from 'rxjs';
+import { Injectable, OnDestroy } from '@angular/core';
 import { UserDoc } from '../shared/models/user.model';
 import { Todo } from '../shared/models/todo.model';
 import { Project } from '../shared/models/project.model';
 import { Heading } from '../shared/models/heading.model';
 import { Checklist } from '../shared/models/checklist.model';
 import { AppService } from './app.service';
-import { Store } from '@ngrx/store';
-import { State } from '../app.state';
+import { select, Store } from '@ngrx/store';
+import { State } from './reducers';
 import { AuthActions } from '../auth/actions';
+import * as fromHome from '../home/reducers';
+import * as fromAuth from '../auth/reducers';
+import { DataActions, ProjectActions, TodoActions } from '../home/actions';
 import WhereFilterOp = firebase.firestore.WhereFilterOp;
 
 @Injectable({
   providedIn: 'root'
 })
-export class DataService {
+export class DataService implements OnDestroy {
   private dbEnv: string = environment.dbEnvironment;
   private userDoc: AngularFirestoreDocument<UserDoc>;
   private usersCol: AngularFirestoreCollection<UserDoc> = this.afs.collection(this.dbEnv);
@@ -26,12 +29,39 @@ export class DataService {
   private projectsCol: AngularFirestoreCollection<Project>;
   private headingsCol: AngularFirestoreCollection<Heading>;
   private checklistsCol: AngularFirestoreCollection<Checklist>;
+  projectsSub: Subscription;
+  todosSub: Subscription;
+  projectIdsSub: Subscription;
 
   constructor(
     private afs: AngularFirestore,
-    private appService: AppService,
     private store: Store<State>
   ) {
+  }
+
+  ngOnDestroy(): void {
+    this.projectsSub.unsubscribe();
+    this.todosSub.unsubscribe();
+    this.projectIdsSub.unsubscribe();
+  }
+
+  startSyncingData(): void {
+    this.projectsSub = this.getAllProjects()
+      .subscribe(projects =>
+        this.store.dispatch(new ProjectActions.SyncProjects(projects))
+      );
+    this.todosSub = this.getAllTodos()
+      .subscribe(todos =>
+        this.store.dispatch(new TodoActions.SyncTodos(todos))
+      );
+    this.projectIdsSub = this.getUserData()
+      .subscribe(user => this.store.dispatch(new AuthActions.SyncProjectIds(user)));
+  }
+
+  stopSyncingData() {
+    this.projectsSub.unsubscribe();
+    this.todosSub.unsubscribe();
+    this.projectIdsSub.unsubscribe();
   }
 
   /*
@@ -61,9 +91,13 @@ export class DataService {
     }
   }
 
-  getUserData(id: string): Observable<UserDoc> {
-    this.setCurrentUserDoc(id);
-    return this.usersCol.doc<UserDoc>(id).valueChanges();
+  getUserData(id?: string): Observable<UserDoc> {
+    if (id) {
+      this.setCurrentUserDoc(id);
+      return this.usersCol.doc<UserDoc>(id).valueChanges();
+    } else {
+      return this.userDoc.valueChanges();
+    }
   }
 
   updateUserDoc(userData) {
@@ -72,7 +106,7 @@ export class DataService {
 
   async initializeNewUser(user: UserDoc) {
     user.projectIds = [];
-    user.signUpDate = firestore.FieldValue.serverTimestamp();
+    user.signUpDate = this.getTime();
     this.setCurrentUserDoc(user.id);
     const batch = this.afs.firestore.batch();
     batch.set(this.userDoc.ref, user);
@@ -91,102 +125,68 @@ export class DataService {
     );
   }
 
+  private getTime() {
+    const time = new Date();
+    return `${time.toDateString()} ${time.toLocaleTimeString()}`;
+  }
+
   /*
   Todos CRUD
   */
-  getTodos(field: string, opStr: WhereFilterOp, value: any): Observable<Todo[]> {
-    return this.userDoc.collection<Todo>(
-      'todos',
-      ref => ref.where(field, opStr, value)
-    ).valueChanges();
-  }
 
   getAllTodos() {
-    return this.todosCol.valueChanges().pipe(tap(todos => {
-      if (todos) {
-        console.log('got all todos', todos);
-        // this.appService.stopLoading();
-      }
-    }));
+    return this.todosCol.valueChanges();
   }
 
-  getTodoIds(projectId: string): Observable<string[]> {
-    return this.projectsCol.doc<Project>(projectId).valueChanges().pipe(
-      map(p => p.todoIds),
-      tap(todoIds => {
-        if (!todoIds || !todoIds.length) {
-          // this.appService.stopLoading();
-        }
-      }),
-    );
-  }
-
-  createTodo(todo: Todo, projectId: string): Promise<void> {
+  createTodo(todo: Todo): Observable<void> {
     const todoId = this.afs.createId();
     todo.id = todoId;
-    todo.creationDate = firestore.FieldValue.serverTimestamp();
-    // console.log('new todo id generated', todoId);
+    todo.creationDate = this.getTime();
 
     const batch = this.afs.firestore.batch();
     batch.set(this.todosCol.doc(todoId).ref, todo);
-    batch.update(this.projectsCol.doc(projectId).ref,
+    batch.update(this.projectsCol.doc(todo.project).ref,
       {todoIds: firestore.FieldValue.arrayUnion(todoId)}
     );
-    return batch.commit();
+    return from(batch.commit());
   }
 
-  updateTodo(id: string, todo: Todo): Promise<void> {
+  updateTodo(todo: Todo): Promise<void> {
     if (todo.completed) {
-      todo.completionDate = firestore.FieldValue.serverTimestamp();
+      todo.completionDate = this.getTime();
     }
-    return this.todosCol.doc(id).update(todo);
+    return this.todosCol.doc(todo.id).update(todo);
   }
 
-  updateTodoIds(projectId: string, todoIds: string[]): Promise<void> {
+  updateTodoIds({todoIds, projectId}): Promise<void> {
     return this.projectsCol.doc(projectId).update({todoIds});
   }
 
-  moveTodo(todoId: string, fromProject: string, toProject: string): Promise<void> {
+  moveTodo({todo, fromProject: fromProject}): Promise<void> {
     const batch = this.afs.firestore.batch();
-    batch.update(this.projectsCol.doc(toProject).ref,
-      {todoIds: firestore.FieldValue.arrayUnion(todoId)}
+    batch.update(this.projectsCol.doc(todo.project).ref,
+      {todoIds: firestore.FieldValue.arrayUnion(todo.id)}
     );
     batch.update(this.projectsCol.doc(fromProject).ref,
-      {todoIds: firestore.FieldValue.arrayRemove(todoId)}
+      {todoIds: firestore.FieldValue.arrayRemove(todo.id)}
     );
     return batch.commit();
   }
 
-  deleteTodo(todoId: string, projectId: string): Promise<void> {
+  deleteTodo({id, project}: Todo): Promise<void> {
     const batch = this.afs.firestore.batch();
-    batch.update(this.projectsCol.doc(projectId).ref,
-      {todoIds: firestore.FieldValue.arrayRemove(todoId)}
+    batch.update(this.projectsCol.doc(project).ref,
+      {todoIds: firestore.FieldValue.arrayRemove(id)}
     );
-    batch.delete(this.todosCol.doc(todoId).ref);
+    batch.delete(this.todosCol.doc(id).ref);
     return batch.commit();
   }
 
   /*
   Projects CRUD
   */
-  getProject(id: string) {
-    if (id === 'new') {
-      this.appService.stopLoading();
-      return of({id: 'new', title: '', completed: false, notes: ''});
-    }
-    return this.projectsCol.doc(id).valueChanges();
-  }
-
   getAllProjects(): Observable<Project[]> {
-    return this.projectsCol.valueChanges().pipe(tap(data => {
-      if (data) {
-        // console.log('got all projects', data);
-      }
-    }));
-  }
-
-  getProjectIds() {
-    return this.userDoc.valueChanges().pipe(map(user => user.projectIds));
+    return this.projectsCol.valueChanges();
   }
 
   updateProjectIds(projectIds: string[]) {
@@ -195,16 +195,15 @@ export class DataService {
 
   updateProject(project: Project): Promise<void> {
     if (project.completed) {
-      project.completionDate = firestore.FieldValue.serverTimestamp();
+      project.completionDate = this.getTime();
     }
     return this.projectsCol.doc(project.id).update(project);
   }
 
-  addProject(project: Project): Promise<string> {
-    this.appService.startLoading();
+  createProject(project: Project): Promise<string> {
     const projectId = this.afs.createId();
     project.id = projectId;
-    project.creationDate = firestore.FieldValue.serverTimestamp();
+    project.creationDate = this.getTime();
     // create a batch to add project AND update user's projectIds array
     const batch = this.afs.firestore.batch();
     batch.set(this.projectsCol.doc(projectId).ref, project);

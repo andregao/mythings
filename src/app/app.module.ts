@@ -4,8 +4,6 @@ import { NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { SharedModule } from './shared/shared.module';
-import { WelcomeComponent } from './info/components/welcome/welcome.component';
 import { AngularFireModule } from '@angular/fire';
 import { environment } from '../environments/environment';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
@@ -15,13 +13,12 @@ import { CoreModule } from './core/core.module';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
-import { reducers, effects } from './app.state';
+import { effects, reducers, metaReducers } from './core/reducers';
 import { InfoModule } from './info/info.module';
 
 @NgModule({
   declarations: [
     AppComponent,
-    // WelcomeComponent
   ],
   imports: [
     BrowserModule,
@@ -31,13 +28,12 @@ import { InfoModule } from './info/info.module';
     AppRoutingModule,
     BrowserAnimationsModule,
     CoreModule,
-    // SharedModule,
     InfoModule,
     AuthModule,
-    StoreModule.forRoot(reducers),
+    StoreModule.forRoot(reducers, {metaReducers}),
     EffectsModule.forRoot(effects),
     StoreDevtoolsModule.instrument({
-      name: 'MaThangs App',
+      name: 'mathangs.com',
       logOnly: environment.production,
     })
   ],
