@@ -70,8 +70,8 @@ export class ListsComponent implements OnInit, OnChanges {
 
   // todoItems
   sortTodos() {
+    // console.log('sorting todos');
     this.clearListsDisplay();
-    console.log('sorting todos');
     const activeTodos = [];
     const completedTodos = [];
     this.todoIds.forEach(id => {

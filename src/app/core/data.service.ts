@@ -61,9 +61,6 @@ export class DataService implements OnDestroy {
     this.projectIdsSub.unsubscribe();
   }
 
-  /*
-  Users CRUD
-  */
   setCurrentUserDoc(id: string): void {
     this.userDoc = this.usersCol.doc(id);
     this.todosCol = this.userDoc.collection('todos');
@@ -72,6 +69,9 @@ export class DataService implements OnDestroy {
     this.checklistsCol = this.userDoc.collection('checklists');
   }
 
+  /*
+  Users CRUD
+  */
   async getUserDataGoogle(user: UserDoc) {
     this.setCurrentUserDoc(user.id);
     const userDocRef = await this.userDoc.ref.get();
@@ -189,17 +189,31 @@ export class DataService implements OnDestroy {
   }
 
   updateProject(project: Project): Promise<void> {
+    const projectRef = this.projectsCol.doc(project.id);
     if (project.completed) {
-      project.completionDate = this.getCurrentTime();
+      // complete a project will complete all its todos
+      const time = this.getCurrentTime();
+      project.completionDate = time;
+      const todoRefs = this.userDoc.collection<Todo>('todos',
+        ref => ref.where('project', '==', project.id)
+      );
+      const batch = this.afs.firestore.batch();
+      batch.update(projectRef.ref, project);
+      todoRefs.get().pipe(take(1))
+        .subscribe(todos => {
+          todos.forEach(t => batch.update(t.ref, {completed: true, completionDate: time}));
+          return batch.commit();
+        });
+    } else {
+      return projectRef.update(project);
     }
-    return this.projectsCol.doc(project.id).update(project);
   }
 
   createProject(project: Project): Promise<string> {
     const projectId = this.afs.createId();
     project.id = projectId;
     project.creationDate = this.getCurrentTime();
-    // create a batch to add project AND update user's projectIds array
+
     const batch = this.afs.firestore.batch();
     batch.set(this.projectsCol.doc(projectId).ref, project);
     batch.update(this.userDoc.ref, {projectIds: firestore.FieldValue.arrayUnion(projectId)});
@@ -207,7 +221,7 @@ export class DataService implements OnDestroy {
   }
 
   deleteProject(projectId: string) {
-    // console.log('data service delete project start');
+    // delete projects and all its todos
     const batch = this.afs.firestore.batch();
     const todoRefs = this.userDoc.collection('todos', ref => ref.where('project', '==', projectId));
     todoRefs.get().pipe(take(1)).subscribe(docs => {
@@ -216,7 +230,6 @@ export class DataService implements OnDestroy {
       batch.update(this.userDoc.ref, {projectIds: firestore.FieldValue.arrayRemove(projectId)});
       batch.commit().then(() => console.log('db: deleted project from firestore'));
     });
-
   }
 
   // headings

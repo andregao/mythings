@@ -21,11 +21,11 @@ export class CompletedComponent implements OnInit, OnChanges {
   // todoItems
   @Input() completedTodos: Todo[];
   @Output() changeTodoStatus = new EventEmitter();
-  todoTableData: MatTableDataSource<Todo>;
+  todosTableData: MatTableDataSource<Todo>;
   todoTableColumns = ['completed', 'title', 'project', 'completionDate'];
 
-  @ViewChildren(MatPaginator) paginator: QueryList<MatPaginator>;
-  @ViewChildren(MatSort) sort: QueryList<MatSort>;
+  @ViewChildren(MatPaginator) paginators: QueryList<MatPaginator>;
+  @ViewChildren(MatSort) sorters: QueryList<MatSort>;
 
   constructor() {
   }
@@ -34,7 +34,7 @@ export class CompletedComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    console.log('Completed Component', changes);
+    // console.log('Completed Component', changes);
 
     // update todoItems table when data changes
     if (changes.completedTodos && changes.completedTodos.currentValue) {
@@ -53,15 +53,15 @@ export class CompletedComponent implements OnInit, OnChanges {
   }
 
   updateTodosTable() {
-    this.todoTableData = new MatTableDataSource<Todo>(this.completedTodos);
+    this.todosTableData = new MatTableDataSource<Todo>(this.completedTodos);
     // customize filter logic
-    this.todoTableData.filterPredicate = this.todoFilter(this.projectMap);
+    this.todosTableData.filterPredicate = this.todoFilter(this.projectMap);
     // customize sorting logic
-    this.todoTableData.sortingDataAccessor = this.sortIncludeDate;
+    this.todosTableData.sortingDataAccessor = this.sortIncludeDate;
     // assign paginator and sorter asynchronously
     setTimeout(() => {
-      this.todoTableData.paginator = this.paginator.first;
-      this.todoTableData.sort = this.sort.first;
+      this.todosTableData.paginator = this.paginators.first;
+      this.todosTableData.sort = this.sorters.first;
     });
   }
 
@@ -70,9 +70,10 @@ export class CompletedComponent implements OnInit, OnChanges {
     this.projectTableData = new MatTableDataSource<Project>(this.completedProjects);
     // customize sorting logic
     this.projectTableData.sortingDataAccessor = this.sortIncludeDate;
+    // assign paginator and sorter asynchronously
     setTimeout(() => {
-      this.projectTableData.paginator = this.paginator.last;
-      this.projectTableData.sort = this.sort.last;
+      this.projectTableData.paginator = this.paginators.last;
+      this.projectTableData.sort = this.sorters.last;
     });
   }
 
@@ -108,7 +109,7 @@ export class CompletedComponent implements OnInit, OnChanges {
 
   // todoItems
   searchTodoTable(keyword: string) {
-    this.todoTableData.filter = keyword;
+    this.todosTableData.filter = keyword;
   }
 
   onTodoCheckboxChange(id: string, change: MatCheckboxChange) {
