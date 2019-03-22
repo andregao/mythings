@@ -1,4 +1,5 @@
 <div fxLayout="column" fxFlex="0 0 10rem">
+  <!--built in projects-->
   <mat-action-list>
     <button
       mat-list-item
@@ -25,6 +26,8 @@
       Completed
     </button>
   </mat-action-list>
+
+  <!--user projects-->
   <mat-action-list
     dense
     cdkDropList
@@ -40,7 +43,9 @@
           (click)="onSetFilter(project.id)"
         >
           <mat-icon mat-list-icon>list</mat-icon>
-          <span class="project-title">{{ project?.title }}</span>
+          <span class="project-title">
+            {{ project?.title | slice:1:28 }}{{ project?.title?.length > 28 ? '...' : null }}
+          </span>
         </button>
       </div>
     </div>

@@ -5,9 +5,12 @@ p.placeholder {
   margin-left: 2rem;
 }
 
-table, mat-table {
+table{
   width: 100%;
 
+  th {
+    margin-left: .3rem;
+  }
   mat-cell {
     cursor: pointer;
   }
