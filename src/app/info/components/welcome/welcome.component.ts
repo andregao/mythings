@@ -6,7 +6,7 @@ import * as fromWelcome from '../../reducers';
 import * as welcomeActions from '../../actions/welcome.actions';
 import * as fromAuth from '../../../auth/reducers';
 import { State } from '../../../core/reducers';
-import { TitleActions } from '../../../core/actions';
+import { LayoutActions } from '../../../core/actions';
 
 @Component({
   templateUrl: './welcome.component.html',
@@ -22,7 +22,7 @@ export class WelcomeComponent implements OnInit {
     private dataService: DataService,
     private store: Store<State>,
   ) {
-    this.store.dispatch(new TitleActions.SetTitle('Welcome to MaThangs'));
+    this.store.dispatch(new LayoutActions.SetTitle('Welcome to mathangs.com'));
     this.store.dispatch(new welcomeActions.GetContent());
   }
 

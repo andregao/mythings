@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
-import { combineLatest, of, Subscription } from 'rxjs';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { combineLatest, merge, of, Subscription } from 'rxjs';
 import { Todo } from '../../shared/models/todo.model';
 import { Project } from '../../shared/models/project.model';
 import { map, skip, take, tap, withLatestFrom } from 'rxjs/operators';
@@ -7,16 +7,28 @@ import { select, Store } from '@ngrx/store';
 import * as fromHome from '../../home/reducers';
 import * as fromAuth from '../../auth/reducers';
 import * as fromRoot from '../../core/reducers';
-import { TitleActions } from '../../core/actions';
+import { LayoutActions } from '../../core/actions';
 import { DataActions, ProjectActions, StatusActions, TodoActions } from '../actions';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 
 
 @Component({
   templateUrl: './shell.component.html',
+  styleUrls: ['./shell.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ShellComponent implements OnInit, OnDestroy {
   dataStatusSub: Subscription;
+
+  // layout
+  drawerMode$ = this.breakpointObserver.observe(Breakpoints.HandsetPortrait)
+    .pipe(
+      map(result => result.matches),
+      tap(isHandset => this.store.dispatch(new LayoutActions.SetDrawerOpened(!isHandset))),
+      map(isHandset => isHandset ? 'over' : 'side'),
+      tap(mode => this.store.dispatch(new LayoutActions.SetDrawerMode(mode))),
+    );
+  isDrawerOpened$ = this.store.pipe(select(fromRoot.shouldDrawerOpen));
 
   // whether to show the completed component
   showCompleted$ = this.store.pipe(
@@ -40,18 +52,18 @@ export class ShellComponent implements OnInit, OnDestroy {
   completedTodos$ = this.store.pipe(select(fromHome.completedTodos));
 
   constructor(
+    private breakpointObserver: BreakpointObserver,
     private store: Store<fromRoot.State>,
   ) {
+    this.store.dispatch(new LayoutActions.SetTitle('Home - mathangs.com'));
   }
 
   ngOnInit() {
-    this.store.dispatch(new TitleActions.SetTitle('Home'));
     this.dataStatusSub = this.store.pipe(
       select(fromHome.needData),
     ).subscribe(needData => {
       if (needData) {
         this.store.dispatch(new DataActions.StartSyncingData());
-        this.store.dispatch(new StatusActions.SetNeedData(false));
         this.checkInitialSync();
       }
     });
@@ -67,11 +79,19 @@ export class ShellComponent implements OnInit, OnDestroy {
       this.store.pipe(select(fromHome.allTodos), skip(1)),
       this.store.pipe(select(fromAuth.getProjectIds), skip(1)),
     ).pipe(take(1))
-      .subscribe(() => this.store.dispatch(new DataActions.InitialSyncSuccess()));
+      .subscribe(() => {
+        this.store.dispatch(new DataActions.InitialSyncSuccess());
+        this.store.dispatch(new StatusActions.SetNeedData(false));
+      });
   }
 
   onSetFilter(projectId: string) {
+    this.store.dispatch(new LayoutActions.SetDrawerOpened(false));
     this.store.dispatch(new StatusActions.SetCurrentProject(projectId));
+  }
+
+  closeDrawer() {
+    this.store.dispatch(new LayoutActions.SetDrawerOpened(false));
   }
 
   /*
@@ -85,8 +105,7 @@ export class ShellComponent implements OnInit, OnDestroy {
         return todo;
       }),
       take(1),
-      tap(todo => this.store.dispatch(new TodoActions.AddTodo(todo)))
-    ).subscribe();
+    ).subscribe(todo => this.store.dispatch(new TodoActions.AddTodo(todo)));
   }
 
   toggleTodoStatus(todo) {
@@ -128,6 +147,7 @@ export class ShellComponent implements OnInit, OnDestroy {
   }
 
   onAddProject() {
+    this.store.dispatch(new LayoutActions.SetDrawerOpened(false));
     this.store.dispatch(new StatusActions.SetCurrentProject('new'));
   }
 

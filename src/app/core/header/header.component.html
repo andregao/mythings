@@ -1,40 +1,44 @@
-<mat-toolbar color="primary" fxLayout="row">
-  <span class="link" routerLink="/">MaThangs</span>
-  <span fxFlex></span>
-
-  <!--signed in state-->
-  <div
-    *ngIf="(currentUser$ | async) as currentUser; else signedOut"
-  >
-    <button mat-flat-button color="primary" [matMenuTriggerFor]="userMenu">
-      <img
-        *ngIf="currentUser.photoURL; else avatarIcon"
-        src="{{ currentUser.photoURL }}"
-        class="user-image"
-        alt="User Picture"
-      />
-      <ng-template #avatarIcon><mat-icon>face</mat-icon></ng-template>
-      {{ currentUser.displayName }}
+<header>
+  <mat-toolbar color="primary" fxLayout="row">
+    <button
+      mat-icon-button
+      *ngIf="(showMenuButton$ | async)"
+      class="menu-button"
+      (click)="toggleDrawer()"
+    >
+      <mat-icon aria-label="toggle filters drawer">menu</mat-icon>
     </button>
-    <mat-menu #userMenu="matMenu">
-      <button mat-menu-item (click)="onSignOut()">
-        Sign Out
+    <span class="link" routerLink="/">MaThangs</span>
+    <span fxFlex></span>
+
+    <!--user state-->
+    <div *ngIf="(currentUser$ | async) as currentUser; else signedOut">
+      <button mat-flat-button color="primary" [matMenuTriggerFor]="userMenu">
+        <img
+          *ngIf="currentUser.photoURL; else avatarIcon"
+          src="{{ currentUser.photoURL }}"
+          class="user-image"
+          alt="User Picture"
+        />
+        <ng-template #avatarIcon><mat-icon>face</mat-icon></ng-template>
+        {{ currentUser.displayName }}
       </button>
-    </mat-menu>
-  </div>
+      <mat-menu #userMenu="matMenu">
+        <button mat-menu-item (click)="onSignOut()">
+          Sign Out
+        </button>
+      </mat-menu>
+    </div>
 
-  <!--signed out state-->
-  <ng-template #signedOut>
-    <button mat-flat-button color="primary" routerLink="/signin">
-      Sign In
-    </button>
-    <button mat-flat-button color="primary" routerLink="/signup">
-      Sign Up
-    </button>
-  </ng-template>
-</mat-toolbar>
+    <!--signed out state-->
+    <ng-template #signedOut>
+      <button mat-flat-button color="primary" routerLink="/signin">
+        Sign In
+      </button>
+      <button mat-flat-button color="primary" routerLink="/signup">
+        Sign Up
+      </button>
+    </ng-template>
+  </mat-toolbar>
+</header>
 
-<!--loading overlay-->
-  <!--[show]="appService.isLoading$ | async"-->
-<mt-loading
-></mt-loading>

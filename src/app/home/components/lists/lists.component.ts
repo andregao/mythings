@@ -68,6 +68,12 @@ export class ListsComponent implements OnInit, OnChanges {
     this.todoIds = [];
   }
 
+  closeAllExpansions() {
+    Object.keys(this.expansionControl).forEach(
+      key => this.expansionControl[key] = false
+    );
+  }
+
   // todoItems
   sortTodos() {
     // console.log('sorting todos');
@@ -83,7 +89,7 @@ export class ListsComponent implements OnInit, OnChanges {
       }
     });
 
-    // limit the number of items
+    // limit the number of completed items
     this.activeTodos = activeTodos;
     this.completedTodos = completedTodos.slice(0, 20);
   }
@@ -112,12 +118,13 @@ export class ListsComponent implements OnInit, OnChanges {
 
   onTodoDrop(event: CdkDragDrop<Todo[]>) {
     if (event.previousIndex !== event.currentIndex) {
+      this.closeAllExpansions();
       moveItemInArray(this.activeTodos, event.previousIndex, event.currentIndex);
       const newTodoIds: string[] = [];
-      this.activeTodos.forEach(todo => newTodoIds.push(todo.id));
       if (this.completedTodos && this.completedTodos.length) {
-        this.completedTodos.forEach(todo => newTodoIds.push(todo.id));
+        this.completedTodos.forEach(todo => newTodoIds.unshift(todo.id));
       }
+      this.activeTodos.forEach(todo => newTodoIds.push(todo.id));
       this.reorderTodos.emit({todoIds: newTodoIds, projectId: this.currentProject.id});
     }
   }

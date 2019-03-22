@@ -1,8 +1,11 @@
-<div
-  fxLayout="row"
-  fxLayoutGap="10px"
->
-  <div class="filters" fxFlex="none">
+<mat-drawer-container fxLayout="row">
+  <mat-drawer
+    class="drawer"
+    #drawer
+    [mode]="drawerMode$ | async"
+    [opened]="isDrawerOpened$ | async"
+    (closed)="closeDrawer()"
+  >
     <mt-filters
       [currentFilter]="currentProjectId$ | async"
       [activeProjects]="activeProjects$ | async"
@@ -11,35 +14,33 @@
       (addProject)="onAddProject()"
       (reorderProjects)="reorderProjects($event)"
     ></mt-filters>
-  </div>
-  <div
-    class="lists"
-    fxFlex="flex"
-    *ngIf="!(showCompleted$ | async); else completed"
-  >
-    <mt-lists
-      [currentProject]="currentProject$ | async"
-      [activeProjects]="activeProjects$ | async"
-      [todos]="todos$ | async"
-      [todoIds]="todoIds$ | async"
-      (todoCheckboxChange)="toggleTodoStatus($event)"
-      (addTodo)="onAddTodo($event)"
-      (editTodo)="onEditTodo($event)"
-      (deleteTodo)="onDeleteTodo($event)"
-      (reorderTodos)="onReorderTodos($event)"
-      (updateProjectInfo)="onUpdateProject($event)"
-      (deleteProject)="onDeleteProject($event)"
-    ></mt-lists>
-  </div>
-  <ng-template #completed>
-    <div class="completed" fxFlex="flex">
-      <mt-completed
-        [completedProjects]="completedProjects$ | async"
-        [allProjects]="allProjects$ | async"
-        [completedTodos]="completedTodos$ | async"
-        (setFilter)="onSetFilter($event)"
-        (changeTodoStatus)="toggleTodoStatus($event)"
-      ></mt-completed>
+  </mat-drawer>
+  <mat-drawer-content fxLayout="column" fxFlex="1 1 auto" class="drawer-content">
+    <div *ngIf="!(showCompleted$ | async); else completed">
+      <mt-lists
+        [currentProject]="currentProject$ | async"
+        [activeProjects]="activeProjects$ | async"
+        [todos]="todos$ | async"
+        [todoIds]="todoIds$ | async"
+        (todoCheckboxChange)="toggleTodoStatus($event)"
+        (addTodo)="onAddTodo($event)"
+        (editTodo)="onEditTodo($event)"
+        (deleteTodo)="onDeleteTodo($event)"
+        (reorderTodos)="onReorderTodos($event)"
+        (updateProjectInfo)="onUpdateProject($event)"
+        (deleteProject)="onDeleteProject($event)"
+      ></mt-lists>
     </div>
-  </ng-template>
-</div>
+    <ng-template #completed>
+      <div>
+        <mt-completed
+          [completedProjects]="completedProjects$ | async"
+          [allProjects]="allProjects$ | async"
+          [completedTodos]="completedTodos$ | async"
+          (setFilter)="onSetFilter($event)"
+          (changeTodoStatus)="toggleTodoStatus($event)"
+        ></mt-completed>
+      </div>
+    </ng-template>
+  </mat-drawer-content>
+</mat-drawer-container>

@@ -1,3 +1,10 @@
-<mt-header></mt-header>
-<router-outlet></router-outlet>
-<mt-footer></mt-footer>
+<div class="container" fxLayout="column">
+  <div class="header">
+    <mt-header></mt-header>
+    <mt-loading></mt-loading>
+  </div>
+  <main fxFlex="1 1 auto">
+    <router-outlet></router-outlet>
+  </main>
+  <mt-footer class="footer"></mt-footer>
+</div>

@@ -1,8 +1,7 @@
-<div fxFlex="80" fxLayout="column" fxLayoutAlign="center stretch">
+<div fxLayout="column" class="lists-container">
   <!--project info area-->
   <form
     *ngIf="currentProject?.id.length === 20 || currentProject?.id === 'new'"
-    class="project-details"
     fxLayout="column"
     #projectInfoForm="ngForm"
     (ngSubmit)="onSaveProjectInfo(); projectInfoForm.resetForm()"
@@ -22,8 +21,7 @@
         [(ngModel)]="currentProject.title"
       />
     </mat-form-field>
-
-    <mat-form-field class="project-notes" appearance="outline">
+    <mat-form-field appearance="outline">
       <mat-label>notes</mat-label>
       <textarea
         matInput
@@ -39,7 +37,7 @@
       [checked]="currentProject.completed"
       [(ngModel)]="currentProject.completed"
       name="projectCompleted"
-      >mark project as completed
+    >mark project as completed
     </mat-checkbox>
     <div fxLayout="row">
       <button
@@ -59,12 +57,11 @@
   </form>
 
   <!--todoItems area-->
-  <div *ngIf="currentProject?.id !== 'new'">
+  <div *ngIf="currentProject?.id !== 'new'" fxLayout="column">
     <!--add todoItem form-->
-    <form class="add-todo" (ngSubmit)="onAddTodo()">
-      <mat-form-field>
+    <form (ngSubmit)="onAddTodo()">
+      <mat-form-field class="add-todo-input" fxFlex="0 1 30rem">
         <input
-          class="todo-input"
           matInput
           placeholder="Add a todo item"
           [(ngModel)]="newTodo.title"
@@ -75,7 +72,7 @@
 
     <!--list of todoItems-->
     <!--active todoItems-->
-    <div *ngIf="activeTodos?.length || completedTodos?.length; else noneTodo">
+    <div *ngIf="activeTodos?.length || completedTodos?.length; else noneTodo" fxFlex="1 0 20rem">
       <mat-accordion cdkDropList (cdkDropListDropped)="onTodoDrop($event)">
         <mat-expansion-panel
           *ngFor="let todo of activeTodos"
@@ -86,8 +83,13 @@
           cdkDragLockAxis="y"
           [cdkDragDisabled]="expansionControl[todo.id]"
         >
-          <mat-expansion-panel-header cdkDragHandle >
-            <span class="mat-content" *ngIf="!expansionControl[todo.id]; else shortHeader">
+          <mat-expansion-panel-header cdkDragHandle>
+
+            <!--header when collapsed-->
+            <span
+              class="mat-content"
+              *ngIf="!expansionControl[todo.id]; else shortHeader"
+            >
               <mat-checkbox
                 fxFlexAlign="center"
                 (click)="$event.stopPropagation()"
@@ -103,25 +105,29 @@
                 {{ todo.title }}
               </span>
             </span>
+
+            <!--header when opened-->
             <ng-template #shortHeader>Edit Todo:</ng-template>
           </mat-expansion-panel-header>
+
+          <!--expanded content-->
           <form #todoEditForm="ngForm">
-            <div fxLayout="row">
-              <mat-checkbox
-                fxFlexAlign="center"
-                [checked]="todo.completed"
-                (change)="onTodoCheckboxChange(todo.id, $event)"
+            <div fxLayout="row wrap" fxLayoutAlign="start center">
+              <mat-checkbox fxFlex="0 0 auto"
+                            [checked]="todo.completed"
+                            (change)="onTodoCheckboxChange(todo.id, $event)"
               >
               </mat-checkbox>
-              <input
-                class="todo-title-edit"
-                matInput
-                required
-                placeholder="edit this todo"
-                [(ngModel)]="todo.title"
-                name="todoTitle"
-              />
-              <mat-form-field>
+              <mat-form-field fxFlex="1 0 12rem" class="edit-todo-input">
+                <input
+                  matInput
+                  required
+                  placeholder="edit this todo"
+                  [(ngModel)]="todo.title"
+                  name="todoTitle"
+                />
+              </mat-form-field>
+              <mat-form-field fxFlex="0 0 auto" class="project-select">
                 <mat-select
                   placeholder="assign to"
                   [(ngModel)]="todo.project"
@@ -155,7 +161,7 @@
               </button>
               <button mat-button (click)="onDeleteTodo(todo)">
                 <mat-icon aria-label="delete todo icon"
-                  >delete_forever
+                >delete_forever
                 </mat-icon>
                 Delete Todo
               </button>

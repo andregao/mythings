@@ -36,6 +36,8 @@ const selectStatusState = createSelector(
 );
 export const needData = createSelector(selectStatusState, fromStatus.getNeedData);
 export const currentProjectId = createSelector(selectStatusState, fromStatus.getCurrentProjectId);
+export const isDrawerOpened = createSelector(selectStatusState, fromStatus.getDrawerOpened);
+export const drawerMode = createSelector(selectStatusState, fromStatus.getDrawerMode);
 
 // project selectors
 const selectProjectsState = createSelector(

@@ -12,7 +12,7 @@ import * as fromAuth from '../reducers';
 import { AuthPageActions, } from '../actions';
 import { select, Store } from '@ngrx/store';
 import { SignUpInfo } from '../../shared/models/user.model';
-import { TitleActions } from '../../core/actions';
+import { LayoutActions } from '../../core/actions';
 
 // validator function to check password matching
 function passwordMatch(control: AbstractControl): ValidationErrors | null {
@@ -61,14 +61,13 @@ export class AuthComponent implements OnInit, OnDestroy {
     this.userSub = this.store.pipe(
       select(fromAuth.isSignedIn),
       filter(signedIn => signedIn),
-      tap(signedIn => this.appService.navigate('/home')),
-    ).subscribe();
+    ).subscribe(signedIn => this.appService.navigate('/home'));
 
     this.authType$ = this.route.url.pipe(
       map(url => url[0].path),
       tap(path => path === 'signin' ?
-        this.store.dispatch(new TitleActions.SetTitle('Sign In to MaThangs')) :
-        this.store.dispatch(new TitleActions.SetTitle('Sign Up for MaThangs'))
+        this.store.dispatch(new LayoutActions.SetTitle('Sign In to mathangs.com')) :
+        this.store.dispatch(new LayoutActions.SetTitle('Sign Up for mathangs.com'))
       )
     );
     this.buildForms();

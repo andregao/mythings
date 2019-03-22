@@ -1,4 +1,4 @@
-<mat-tab-group>
+<mat-tab-group fxFlex="0 1 40rem">
   <!--TodoItems-->
   <mat-tab label="Todos">
     <div
@@ -11,8 +11,8 @@
           placeholder="Search"
         />
       </mat-form-field>
-      <div>
-        <table
+      <div fxLayout="column">
+        <table fxFlex="0 1 40rem"
           mat-table
           [dataSource]="todosTableData"
           matSort
@@ -76,36 +76,37 @@
           placeholder="Search"
         />
       </mat-form-field>
-      <mat-table
+      <table
+        mat-table
         [dataSource]="projectTableData"
         matSort
         matSortActive="completionDate"
         matSortDirection="desc"
       >
-        <ng-container matColumnDef="title">
-          <mat-header-cell *matHeaderCellDef mat-sort-header
-            >Title</mat-header-cell
-          >
-          <mat-cell *matCellDef="let project">
-            <mat-icon class="project-icon" mat-list-icon>list</mat-icon>
-            {{ project.title }}
-          </mat-cell>
+        <ng-container matColumnDef="title" >
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            Title
+          </th>
+          <td mat-cell *matCellDef="let project" fxLayout="row">
+            <mat-icon class="project-icon" mat-list-icon fxFlexAlign="center">list</mat-icon>
+            <p>{{ project.title }}</p>
+          </td>
         </ng-container>
         <ng-container matColumnDef="completionDate">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
             Completion Date
-          </mat-header-cell>
-          <mat-cell *matCellDef="let project">{{
+          </th>
+          <td mat-cell *matCellDef="let project">{{
             project.completionDate
-          }}</mat-cell>
+            }}</td>
         </ng-container>
-        <mat-header-row *matHeaderRowDef="projectTableColumns"></mat-header-row>
-        <mat-row
+        <tr mat-header-row *matHeaderRowDef="projectTableColumns"></tr>
+        <tr mat-row
           class="project-rows"
           *matRowDef="let row; columns: projectTableColumns"
           (click)="onSetFilter(row.id)"
-        ></mat-row>
-      </mat-table>
+        ></tr>
+      </table>
       <mat-paginator
         [pageSizeOptions]="[10, 20]"
         showFirstLastButtons

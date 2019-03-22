@@ -59,7 +59,7 @@
 <!--sign up form-->
 <ng-template #signUp>
   <form [formGroup]="signUpForm" fxLayoutAlign="center" (ngSubmit)="onSignUp()">
-    <mat-card fxLayout="column" fxFlex="60" fxFlex.lt-sm="90">
+    <mat-card fxLayout="column" fxFlex.lt-md="70" fxFlex.lt-sm="90" fxFlex="0 1 40rem">
       <mat-card-title>Sign Up</mat-card-title>
       <mat-form-field>
         <input
@@ -84,8 +84,8 @@
           Invalid E-mail address
         </mat-error>
       </mat-form-field>
-      <div formGroupName="passwordGroup" fxLayout="row">
-        <mat-form-field fxFlex="50">
+      <div formGroupName="passwordGroup" fxLayout="row wrap" fxLayoutGap="1rem">
+        <mat-form-field>
           <input
             matInput
             type="password"
@@ -108,7 +108,7 @@
             Please enter a password
           </mat-error>
         </mat-form-field>
-        <mat-form-field fxFlex>
+        <mat-form-field>
           <input
             matInput
             type="password"

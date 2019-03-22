@@ -15,6 +15,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 import { effects, reducers, metaReducers } from './core/reducers';
 import { InfoModule } from './info/info.module';
+import { SharedModule } from './shared/shared.module';
 
 @NgModule({
   declarations: [
@@ -22,11 +23,12 @@ import { InfoModule } from './info/info.module';
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
     AngularFireAuthModule,
     AppRoutingModule,
-    BrowserAnimationsModule,
+    SharedModule,
     CoreModule,
     InfoModule,
     AuthModule,

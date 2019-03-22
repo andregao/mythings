@@ -1,4 +1,4 @@
 import * as LoaderActions from './loader.actions';
-import * as TitleActions from './title.actions';
+import * as LayoutActions from './layout.actions';
 
-export { LoaderActions, TitleActions };
+export { LoaderActions, LayoutActions };

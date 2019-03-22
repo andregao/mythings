@@ -8,8 +8,6 @@ import * as fromRoot from '../../../core/reducers';
   styleUrls: ['./loading.component.scss']
 })
 export class LoadingComponent implements OnInit {
-  // @Input() mode: 'query' | 'indeterminate';
-  // @Input() show: boolean;
   show$ = this.store.pipe(select(fromRoot.isAppLoading));
   mode$ = this.store.pipe(select(fromRoot.getLoaderType));
 

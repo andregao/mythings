@@ -1,3 +1,20 @@
+.lists-container {
+  margin-right: 1rem;
+  max-width: 40rem;
+}
+
+.add-todo-input {
+  margin-top: .8rem;
+}
+
+.edit-todo-input {
+  font-size: 1rem;
+  margin-left: .5rem;
+}
+.project-select {
+  margin-left: .5rem;
+}
+
 mat-checkbox {
   font-size: 1rem;
 
@@ -6,30 +23,6 @@ mat-checkbox {
     color: dimgray;
   }
 }
-
-mat-form-field {
-  width: 80%;
-  &.project-title {
-    margin-top: 1rem;
-  }
-}
-
-form {
-  &.add-todo {
-    margin-top: 1rem;
-  }
-}
-
-input {
-  &.todo-title-edit {
-    font-size: 1rem;
-    margin-left: .5rem;
-  }
-
-  &.todo-input {
-  }
-}
-
 mat-divider {
   margin-bottom: 1rem;
 }

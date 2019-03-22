@@ -12,14 +12,17 @@ import {
   MatMenuModule,
   MatPaginatorModule,
   MatProgressBarModule,
-  MatSelectModule, MatSortModule,
+  MatSelectModule, MatSidenavModule, MatSortModule,
   MatTableModule,
   MatTabsModule,
   MatToolbarModule
 } from '@angular/material';
+import { LayoutModule } from '@angular/cdk/layout';
 
 const materialComponents = [
   MatToolbarModule,
+  MatSidenavModule,
+  LayoutModule,
   MatListModule,
   MatButtonModule,
   MatMenuModule,

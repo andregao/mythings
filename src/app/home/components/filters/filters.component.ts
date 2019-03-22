@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Project } from '../../../shared/models/project.model';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { StatusActions } from '../../actions';
 
 @Component({
   selector: 'mt-filters',

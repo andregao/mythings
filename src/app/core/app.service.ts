@@ -29,8 +29,7 @@ export class AppService implements OnDestroy {
   getTitle() {
     this.titleSub = this.store.pipe(
       select(fromRoot.getTitle),
-      tap(title => this.titleService.setTitle(title))
-    ).subscribe();
+    ).subscribe(title => this.titleService.setTitle(title));
   }
 
   navigate(route: string) {

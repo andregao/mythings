@@ -41,23 +41,22 @@ export class AuthService implements OnDestroy {
       }),
       filter(user => !!user),
       take(1),
-      map(user => {
-        if (user.providerData && user.providerData[0].providerId === 'google.com') {
-          // console.log('google user');
-          const userData = {
-            id: user.uid,
-            email: user.email,
-            displayName: user.displayName,
-            photoURL: user.photoURL,
-          };
-          this.store.dispatch(new AuthApiActions.GoogleSignInSuccess(userData));
-        }
-        if (user.providerData && user.providerData[0].providerId === 'password') {
-          // console.log('email user');
-          this.store.dispatch(new AuthActions.GetUserData(user.uid));
-        }
-      })
-    ).subscribe();
+    ).subscribe(user => {
+      if (user.providerData && user.providerData[0].providerId === 'google.com') {
+        // console.log('google user');
+        const userData = {
+          id: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+        };
+        this.store.dispatch(new AuthApiActions.GoogleSignInSuccess(userData));
+      }
+      if (user.providerData && user.providerData[0].providerId === 'password') {
+        // console.log('email user');
+        this.store.dispatch(new AuthActions.GetUserData(user.uid));
+      }
+    });
   }
 
   stopMonitoringAuth() {

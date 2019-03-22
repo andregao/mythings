@@ -1,12 +1,12 @@
 mat-progress-bar {
   position: absolute;
-  z-index: 1001;
+  z-index: 200;
 }
 .page-mask{
   position: absolute;
-  z-index: 1000;
+  z-index: 199;
   width: 100%;
-  height: 100%;
+  height: 85vh;
   display: block;
   background-color: rgba(255, 255, 255, 0.8);
 }
