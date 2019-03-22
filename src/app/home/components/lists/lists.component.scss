@@ -8,7 +8,7 @@
 }
 
 .edit-todo-input {
-  font-size: 1rem;
+  //font-size: 1rem;
   margin-left: .5rem;
 }
 .project-select {
@@ -16,10 +16,10 @@
 }
 
 mat-checkbox {
-  font-size: 1rem;
+  //font-size: 1rem;
 
   &.checkbox-complete {
-    font-size: .8rem;
+    //font-size: .8rem;
     color: dimgray;
   }
 }
@@ -29,7 +29,7 @@ mat-divider {
 
 .divider-heading {
   margin-top: 1rem;
-  font-size: .8rem;
+  //font-size: .8rem;
 }
 
 .completed {
@@ -38,11 +38,11 @@ mat-divider {
 
 .todo-title {
   margin-left: .5rem;
-  font-size: 1rem;
+  //font-size: 1rem;
 }
 
 p.placeholder {
-  font-size: 1rem;
+  //font-size: 1rem;
   font-style: italic;
   color: darkgray;
   margin-left: 2rem;
