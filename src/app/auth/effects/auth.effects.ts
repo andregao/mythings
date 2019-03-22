@@ -114,6 +114,7 @@ export class AuthEffects {
     switchMap(() => [
       new ProjectActions.ClearProjects(),
       new TodoActions.ClearTodos(),
+      new StatusActions.SetCurrentProject('inbox'),
       new StatusActions.SetNeedData(true),
     ]),
   );
