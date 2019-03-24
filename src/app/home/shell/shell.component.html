@@ -6,6 +6,7 @@
     [opened]="isDrawerOpened$ | async"
     (closed)="closeDrawer()"
   >
+    <!--filters component-->
     <mt-filters
       [currentFilter]="currentProjectId$ | async"
       [activeProjects]="activeProjects$ | async"
@@ -15,7 +16,9 @@
       (reorderProjects)="reorderProjects($event)"
     ></mt-filters>
   </mat-drawer>
+
   <mat-drawer-content fxLayout="column" fxFlex="1 1 auto" class="drawer-content">
+    <!--list component-->
     <div *ngIf="!(showCompleted$ | async); else completed">
       <mt-lists
         [currentProject]="currentProject$ | async"
@@ -31,6 +34,8 @@
         (deleteProject)="onDeleteProject($event)"
       ></mt-lists>
     </div>
+
+    <!--completed component-->
     <ng-template #completed>
       <div>
         <mt-completed

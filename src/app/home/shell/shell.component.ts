@@ -36,17 +36,17 @@ export class ShellComponent implements OnInit, OnDestroy {
     map(id => id === 'completed'),
   );
 
-  // used in filters component
+  // used in filters child component
   currentProjectId$ = this.store.pipe(select(fromHome.currentProjectId));
   activeProjects$ = this.store.pipe(select(fromHome.activeProjects));
   projectIds$ = this.store.pipe(select(fromAuth.getProjectIds));
 
-  // used in lists component
+  // used in lists child component
   currentProject$ = this.store.pipe(select(fromHome.currentProject));
   todos$ = this.store.pipe(select(fromHome.allTodos));
   todoIds$ = this.store.pipe(select(fromHome.todoIds));
 
-  // used in completed component
+  // used in completed child component
   allProjects$ = this.store.pipe(select(fromHome.allProjects));
   completedProjects$ = this.store.pipe(select(fromHome.completedProjects));
   completedTodos$ = this.store.pipe(select(fromHome.completedTodos));
