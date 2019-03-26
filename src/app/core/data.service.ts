@@ -107,8 +107,12 @@ export class DataService implements OnDestroy {
     this.setCurrentUserDoc(user.id);
     const batch = this.afs.firestore.batch();
     batch.set(this.userDoc.ref, user);
-    batch.set(this.projectsCol.doc('inbox').ref, {id: 'inbox', title: 'Inbox', todoIds: []});
-    batch.set(this.projectsCol.doc('someday').ref, {id: 'someday', title: 'Someday', todoIds: []});
+    batch.set(this.projectsCol.doc('inbox').ref,
+      {id: 'inbox', title: 'Inbox', todoIds: [], completed: false}
+    );
+    batch.set(this.projectsCol.doc('someday').ref,
+      {id: 'someday', title: 'Someday', todoIds: [], completed: false}
+    );
     await batch.commit();
     // return user data after initialization
     const userData = await this.userDoc.ref.get();

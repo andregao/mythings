@@ -1,28 +1,21 @@
-h1 {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
+.container {
+  padding-top: 2rem;
 
-h2 {
-  font-size: 1rem;
-  font-weight: lighter;
-  &.subtitle {
-    font-size: .8rem;
+  .mat-display-1 {
+    margin-bottom: .5rem;
   }
-}
 
-li {
-  margin-bottom: .5rem;
-}
+  mat-tab-group {
+    max-width: 38rem;
+    margin: 2rem 1rem;
 
-mat-tab-group {
-  width: 70%;
-  margin: 2rem 0;
-}
+    .mat-tab-content {
+      margin-top: 1rem;
 
-p {
-  &.tab-group {
-    padding: 0 1.5rem;
-    font-weight: lighter;
+      p {
+        margin: 0 2rem;
+      }
+    }
   }
+
 }

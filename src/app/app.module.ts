@@ -36,6 +36,7 @@ import { SharedModule } from './shared/shared.module';
     EffectsModule.forRoot(effects),
     StoreDevtoolsModule.instrument({
       name: 'mathangs.com',
+      maxAge: 15,
       logOnly: environment.production,
     })
   ],

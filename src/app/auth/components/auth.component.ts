@@ -3,8 +3,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { Observable, Subscription } from 'rxjs';
 import { debounceTime, filter, map, tap } from 'rxjs/operators';
-import { MatIconRegistry } from '@angular/material';
-import { DomSanitizer } from '@angular/platform-browser';
 import { AuthService } from '../../core/auth.service';
 import { DataService } from '../../core/data.service';
 import { AppService } from '../../core/app.service';
@@ -49,11 +47,7 @@ export class AuthComponent implements OnInit, OnDestroy {
     private dataService: DataService,
     private appService: AppService,
     private store: Store<fromAuth.State>,
-    private iconRegistry: MatIconRegistry,
-    private sanitizer: DomSanitizer,
   ) {
-    iconRegistry.addSvgIcon('google',
-      sanitizer.bypassSecurityTrustResourceUrl('/assets/google.svg'));
   }
 
   ngOnInit() {

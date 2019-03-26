@@ -1,11 +1,12 @@
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Title } from '@angular/platform-browser';
+import { DomSanitizer, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { select, Store } from '@ngrx/store';
 import { State } from './reducers';
 import * as fromRoot from './reducers';
 import { tap } from 'rxjs/operators';
+import { MatIconRegistry } from '@angular/material';
 
 @Injectable({
   providedIn: 'root'
@@ -18,8 +19,12 @@ export class AppService implements OnDestroy {
     private router: Router,
     private store: Store<State>,
     private ngZone: NgZone, // workaround for ngZone failure when redirect from Google
+    private iconRegistry: MatIconRegistry,
+    private sanitizer: DomSanitizer,
   ) {
     this.getTitle();
+    iconRegistry.addSvgIcon('google',
+      sanitizer.bypassSecurityTrustResourceUrl('/assets/google.svg'));
   }
 
   ngOnDestroy(): void {
