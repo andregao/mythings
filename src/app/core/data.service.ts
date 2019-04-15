@@ -56,9 +56,11 @@ export class DataService implements OnDestroy {
   }
 
   stopSyncingData() {
-    this.projectsSub.unsubscribe();
-    this.todosSub.unsubscribe();
-    this.projectIdsSub.unsubscribe();
+    if (this.projectsSub) {
+      this.projectsSub.unsubscribe();
+      this.todosSub.unsubscribe();
+      this.projectIdsSub.unsubscribe();
+    }
   }
 
   setCurrentUserDoc(id: string): void {
