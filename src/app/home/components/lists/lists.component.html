@@ -1,15 +1,17 @@
 <div fxLayout="column" class="lists-container">
   <!--project info area-->
   <form
-    *ngIf="currentProject?.id.length === 20 || currentProject?.id === 'new'"
+    *ngIf="currentProject?.id.length === 20 || currentProject?.id === 'new'; else builtIn"
     fxLayout="column"
     #projectInfoForm="ngForm"
     (ngSubmit)="onSaveProjectInfo(); projectInfoForm.resetForm()"
+    class="project-info"
   >
+    <div fxLayout="row">
     <mat-form-field
       class="project-title"
       appearance="standard"
-      fxFlexAlign="start"
+      fxFlex="0 1 30rem"
     >
       <mat-label>project name</mat-label>
       <input
@@ -21,6 +23,7 @@
         [(ngModel)]="currentProject.title"
       />
     </mat-form-field>
+    </div>
     <mat-form-field appearance="outline">
       <mat-label>notes</mat-label>
       <textarea
@@ -56,11 +59,17 @@
     </div>
   </form>
 
+  <!--title for built in projects-->
+  <ng-template #builtIn>
+    <h1 class="mat-h1 built-in-project-title">{{currentProject?.title}}</h1>
+  </ng-template>
+
   <!--todoItems area-->
   <div *ngIf="currentProject?.id !== 'new'" fxLayout="column">
+
     <!--add todoItem form-->
     <form (ngSubmit)="onAddTodo()">
-      <mat-form-field class="add-todo-input" fxFlex="0 1 30rem">
+      <mat-form-field fxFlex="0 1 30rem">
         <input
           matInput
           placeholder="Add a todo item"
@@ -72,38 +81,37 @@
 
     <!--list of todoItems-->
     <!--active todoItems-->
-    <div *ngIf="activeTodos?.length || completedTodos?.length; else noneTodo" fxFlex="1 0 20rem">
+    <div
+      *ngIf="activeTodos?.length || completedTodos?.length; else noneTodo"
+    >
       <mat-accordion cdkDropList (cdkDropListDropped)="onTodoDrop($event)">
         <mat-expansion-panel
           *ngFor="let todo of activeTodos"
           (opened)="expansionControl[todo.id] = true"
           (closed)="expansionControl[todo.id] = false"
           [expanded]="expansionControl[todo.id]"
+          hideToggle
           cdkDrag
           cdkDragLockAxis="y"
           [cdkDragDisabled]="expansionControl[todo.id]"
         >
-          <mat-expansion-panel-header cdkDragHandle>
-
+          <mat-expansion-panel-header>
             <!--header when collapsed-->
             <span
               class="mat-content"
               *ngIf="!expansionControl[todo.id]; else shortHeader"
+              fxLayout="row" fxLayoutAlign="start center"
             >
               <mat-checkbox
-                fxFlexAlign="center"
                 (click)="$event.stopPropagation()"
-                [checked]="todo.completed"
                 (change)="onTodoCheckboxChange(todo.id, $event)"
               >
               </mat-checkbox>
-              <span
-                class="todo-title"
-                fxFlexAlign="center"
-                [ngClass]="{ completed: todo.completed }"
-              >
-                {{ todo.title }}
-              </span>
+              <mat-panel-title>
+                {{ todo.title | truncateText:60 }}
+              </mat-panel-title>
+              <span fxFlex></span>
+              <mat-icon cdkDragHandle>drag_handle</mat-icon>
             </span>
 
             <!--header when opened-->
@@ -113,9 +121,10 @@
           <!--expanded content-->
           <form #todoEditForm="ngForm">
             <div fxLayout="row wrap" fxLayoutAlign="start center">
-              <mat-checkbox fxFlex="0 0 auto"
-                            [checked]="todo.completed"
-                            (change)="onTodoCheckboxChange(todo.id, $event)"
+              <mat-checkbox
+                fxFlex="0 0 auto"
+                [checked]="todo.completed"
+                (change)="onTodoCheckboxChange(todo.id, $event)"
               >
               </mat-checkbox>
               <mat-form-field fxFlex="1 0 12rem" class="edit-todo-input">
@@ -188,7 +197,7 @@
             fxFlexAlign="baseline"
             [ngClass]="{ completed: todo.completed }"
           >
-            {{ todo.title }}
+            {{ todo.title | truncateText:60 }}
           </span>
         </mat-list-item>
       </mat-list>

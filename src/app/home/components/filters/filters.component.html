@@ -1,4 +1,4 @@
-<div fxLayout="column" fxFlex="0 0 10rem">
+<div fxLayout="column">
   <!--built in projects-->
   <mat-action-list>
     <button
@@ -42,9 +42,9 @@
           [ngClass]="{ active: currentFilter === project?.id }"
           (click)="onSetFilter(project.id)"
         >
-          <mat-icon mat-list-icon>list</mat-icon>
+          <mat-icon mat-list-icon cdkDragHandle>drag_indicator</mat-icon>
           <span class="project-title">
-            {{ project?.title | slice:0:28 }}{{ project?.title?.length > 29 ? '...' : null }}
+            {{ project?.title | truncateText:28 }}
           </span>
         </button>
       </div>

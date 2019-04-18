@@ -1,49 +1,62 @@
 .lists-container {
   margin-right: 1rem;
   max-width: 40rem;
-}
 
-.add-todo-input {
-  margin-top: .8rem;
-}
+  .project-info {
+    margin-bottom: 2.5rem;
+  }
 
-.edit-todo-input {
-  //font-size: 1rem;
-  margin-left: .5rem;
-}
-.project-select {
-  margin-left: .5rem;
-}
+  .built-in-project-title {
+    margin: .5rem 0
+  }
 
-mat-checkbox {
-  //font-size: 1rem;
+  .project-title {
+    max-width: 30rem;
+  }
 
-  &.checkbox-complete {
-    //font-size: .8rem;
-    color: dimgray;
+  .completed {
+    color: darkgray;
+  }
+
+  .edit-todo-input {
+    //font-size: 1rem;
+    margin-left: .5rem;
+  }
+
+  .project-select {
+    margin-left: .5rem;
+  }
+
+  mat-divider {
+    margin-bottom: 1rem;
+  }
+
+  .divider-heading {
+    margin-top: 1rem;
+  }
+
+  mat-checkbox {
+    margin-right: .5rem;
+
+    &.checkbox-complete {
+      color: dimgray;
+    }
+  }
+
+  p.placeholder {
+    font-style: italic;
+    color: darkgray;
+    margin-left: 2rem;
   }
 }
-mat-divider {
-  margin-bottom: 1rem;
-}
 
-.divider-heading {
-  margin-top: 1rem;
-  //font-size: .8rem;
-}
+// Drag and Drop Styling
+.cdk-drag-preview {
+  mat-checkbox {
+    margin-right: .5rem;
+  }
 
-.completed {
-  color: darkgray;
-}
-
-.todo-title {
-  margin-left: .5rem;
-  //font-size: 1rem;
-}
-
-p.placeholder {
-  //font-size: 1rem;
-  font-style: italic;
-  color: darkgray;
-  margin-left: 2rem;
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+  0 8px 10px 1px rgba(0, 0, 0, 0.14),
+  0 3px 14px 2px rgba(0, 0, 0, 0.12);
 }

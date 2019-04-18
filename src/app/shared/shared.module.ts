@@ -5,9 +5,10 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { RouterModule } from '@angular/router';
 import { LoadingComponent } from './components/loading/loading.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { TruncateTextPipe } from './pipes/truncate-text.pipe';
 
 @NgModule({
-  declarations: [LoadingComponent],
+  declarations: [LoadingComponent, TruncateTextPipe],
   imports: [
     CommonModule,
     MaterialModule,
@@ -19,6 +20,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     MaterialModule,
     FlexLayoutModule,
     LoadingComponent,
+    TruncateTextPipe,
   ]
 })
 export class SharedModule {

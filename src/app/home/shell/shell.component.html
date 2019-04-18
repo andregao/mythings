@@ -1,13 +1,13 @@
-<mat-drawer-container fxLayout="row">
+<mat-drawer-container fxLayout="row" (backdropClick)="closeDrawer()">
   <mat-drawer
     class="drawer"
     #drawer
     [mode]="drawerMode$ | async"
     [opened]="isDrawerOpened$ | async"
-    (closed)="closeDrawer()"
+    [autoFocus]="false"
   >
     <!--filters component-->
-    <mt-filters
+    <mt-filters fxFlex="0 0 10rem"
       [currentFilter]="currentProjectId$ | async"
       [activeProjects]="activeProjects$ | async"
       [projectIds]="projectIds$ | async"

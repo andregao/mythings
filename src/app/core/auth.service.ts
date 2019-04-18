@@ -13,9 +13,7 @@ import UserCredential = firebase.auth.UserCredential;
   providedIn: 'root'
 })
 export class AuthService implements OnDestroy {
-  private currentUser = new BehaviorSubject<UserDoc | null>(null);
-  currentUser$: Observable<UserDoc | null> = this.currentUser.asObservable();
-  redirectUrl: string;
+  // redirectUrl: string;
   userSub: Subscription;
   stopMonitoring = new Subject();
 

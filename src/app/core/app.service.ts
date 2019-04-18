@@ -18,7 +18,7 @@ export class AppService implements OnDestroy {
     private titleService: Title,
     private router: Router,
     private store: Store<State>,
-    private ngZone: NgZone, // workaround for ngZone failure when redirect from Google
+    private ngZone: NgZone,
     private iconRegistry: MatIconRegistry,
     private sanitizer: DomSanitizer,
   ) {
@@ -38,6 +38,7 @@ export class AppService implements OnDestroy {
   }
 
   navigate(route: string) {
+    // workaround for ngZone failure when redirected from Google
     this.ngZone.run(() => this.router.navigateByUrl(route)).then();
   }
 
