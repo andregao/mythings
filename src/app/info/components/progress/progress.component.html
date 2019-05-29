@@ -1,0 +1,43 @@
+<div class="container">
+      <h2 class="mat-h2">Get Things Done. Don't Procrastinate</h2>
+      <div class="section">
+        <h2 class="mat-h3">Day {{ dayLeft | percent: "0.1-1" }} Left</h2>
+        <mat-progress-bar
+          mode="determinate"
+          [value]="(1 - dayLeft) * 100"
+        ></mat-progress-bar>
+      </div>
+      <div class="section">
+        <h2 class="mat-h3">Week {{ weekLeft | percent: "0.1-1" }} Left</h2>
+        <mat-progress-bar
+          mode="determinate"
+          [value]="(1 - weekLeft) * 100"
+        ></mat-progress-bar>
+      </div>
+      <div class="section">
+        <h2 class="mat-h3">Year {{ yearLeft | percent: "0.1-1" }} Left</h2>
+        <mat-progress-bar
+          mode="determinate"
+          [value]="(1 - yearLeft) * 100"
+        ></mat-progress-bar>
+      </div>
+      <ng-container *ngIf="lifeLeft">
+        <div class="section">
+          <h2 class="mat-h3">Life {{ lifeLeft | percent: "0.1-1" }} Left</h2>
+          <mat-progress-bar
+            mode="determinate"
+            [value]="(1 - lifeLeft) * 100"
+          ></mat-progress-bar>
+        </div>
+      </ng-container>
+  <form [formGroup]="ageForm" (ngSubmit)="onSubmitAge()" *ngIf="!lifeLeft">
+    <mat-form-field>
+      <input
+        type="number"
+        matInput
+        formControlName="age"
+        placeholder="Enter Your Age to See Life's Progress"
+      />
+    </mat-form-field>
+  </form>
+</div>

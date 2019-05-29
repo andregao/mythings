@@ -6,7 +6,7 @@ import { select, Store } from '@ngrx/store';
 import { State } from './reducers';
 import * as fromRoot from './reducers';
 import { tap } from 'rxjs/operators';
-import { MatIconRegistry } from '@angular/material';
+import { MatIconRegistry } from '@angular/material/icon';
 
 @Injectable({
   providedIn: 'root'

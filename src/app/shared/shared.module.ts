@@ -4,8 +4,8 @@ import { MaterialModule } from './material.module';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { RouterModule } from '@angular/router';
 import { LoadingComponent } from './components/loading/loading.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TruncateTextPipe } from './pipes/truncate-text.pipe';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [LoadingComponent, TruncateTextPipe],
@@ -21,6 +21,7 @@ import { TruncateTextPipe } from './pipes/truncate-text.pipe';
     FlexLayoutModule,
     LoadingComponent,
     TruncateTextPipe,
+    ReactiveFormsModule,
   ]
 })
 export class SharedModule {

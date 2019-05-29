@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { MatCheckboxChange } from '@angular/material';
+import { MatCheckboxChange } from '@angular/material/checkbox';
 import { Todo } from '../../../shared/models/todo.model';
 import { Project } from '../../../shared/models/project.model';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';

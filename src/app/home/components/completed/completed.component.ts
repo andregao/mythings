@@ -1,7 +1,10 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
 import { Project } from '../../../shared/models/project.model';
 import { Todo } from '../../../shared/models/todo.model';
-import { MatCheckboxChange, MatPaginator, MatSort, MatTableDataSource } from '@angular/material';
+import { MatCheckboxChange } from '@angular/material/checkbox';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 
 @Component({
   selector: 'mt-completed',
