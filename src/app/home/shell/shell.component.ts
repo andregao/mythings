@@ -55,7 +55,7 @@ export class ShellComponent implements OnInit, OnDestroy {
     private breakpointObserver: BreakpointObserver,
     private store: Store<fromRoot.State>,
   ) {
-    this.store.dispatch(new LayoutActions.SetTitle('Home - mathangs.com'));
+    this.store.dispatch(new LayoutActions.SetTitle('Home - thangs.web.app'));
   }
 
   ngOnInit() {

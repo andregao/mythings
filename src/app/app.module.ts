@@ -35,7 +35,7 @@ import { SharedModule } from './shared/shared.module';
     StoreModule.forRoot(reducers, {metaReducers}),
     EffectsModule.forRoot(effects),
     StoreDevtoolsModule.instrument({
-      name: 'mathangs.com',
+      name: 'thangs.web.app',
       maxAge: 15,
       logOnly: environment.production,
     })

@@ -60,8 +60,8 @@ export class AuthComponent implements OnInit, OnDestroy {
     this.authType$ = this.route.url.pipe(
       map(url => url[0].path),
       tap(path => path === 'signin' ?
-        this.store.dispatch(new LayoutActions.SetTitle('Sign In to mathangs.com')) :
-        this.store.dispatch(new LayoutActions.SetTitle('Sign Up for mathangs.com'))
+        this.store.dispatch(new LayoutActions.SetTitle('Sign In to Thangs')) :
+        this.store.dispatch(new LayoutActions.SetTitle('Sign Up for Thangs'))
       )
     );
     this.buildForms();

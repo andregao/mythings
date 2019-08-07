@@ -22,7 +22,7 @@ export class WelcomeComponent implements OnInit {
     private dataService: DataService,
     private store: Store<State>,
   ) {
-    this.store.dispatch(new LayoutActions.SetTitle('Welcome to mathangs.com'));
+    this.store.dispatch(new LayoutActions.SetTitle('Welcome to Thangs'));
     this.store.dispatch(new welcomeActions.GetContent());
   }
 

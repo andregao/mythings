@@ -7,7 +7,7 @@ export interface State {
 }
 
 const initialState: State = {
-  title: 'mathangs.com',
+  title: 'Thangs',
   drawerOpened: false,
   drawerMode: 'over'
 };
